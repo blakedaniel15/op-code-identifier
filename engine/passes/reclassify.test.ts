@@ -12,3 +12,6 @@ test('partial brake signal surfaces as AI/LOW review', () => {
 test('no signal returns null', () => {
   expect(reclassifyPass(mk('CONFIRM FRAME VIN'), MENU_ITEMS)).toBeNull();
 });
+test('a requiredAlso-only partial (e.g. generic SERVICE) is not surfaced', () => {
+  expect(reclassifyPass(mk('BATTERY SERVICE'), MENU_ITEMS)).toBeNull();
+});

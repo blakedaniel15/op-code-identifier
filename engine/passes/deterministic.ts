@@ -17,7 +17,8 @@ export function deterministicPass(item: Item, catalog: MenuItem[]): Verdict | nu
   };
   if (matched.isTire) {
     const qty = detectTireQuantity(dom.raw);
-    if (qty !== null) verdict.quantity = qty;
+    if (qty === null) return null; // tire match w/o a parseable count -> defer to adjudicator/reclassify
+    verdict.quantity = qty;
   }
   return verdict;
 }

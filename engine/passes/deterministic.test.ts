@@ -22,3 +22,6 @@ test('scattered stats cap an alignment match to MEDIUM', () => {
   const v = deterministicPass(mk('4 WHEEL ALIGNMENT', [10, 400, 90], [0.2, 5, 1]), MENU_ITEMS)!;
   expect(v.confidence).toBe('MEDIUM');
 });
+test('tire match without a parseable quantity does not auto-identify', () => {
+  expect(deterministicPass(mk('MOUNT AND BALANCE SET OF TIRES'), MENU_ITEMS)).toBeNull();
+});
