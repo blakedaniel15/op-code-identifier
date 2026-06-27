@@ -1,0 +1,4 @@
+node_modules/
+data/*.csv
+!data/.gitkeep
+.superpowers/

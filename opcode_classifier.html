@@ -1,0 +1,2183 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.25.6/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+  :root {
+    --bg: #FAFAF5;
+    --surface: #FFFFFF;
+    --surface-2: #F4F3EE;
+    --border: #E5E2D9;
+    --border-strong: #CFCBBE;
+    --text: #0B0B0D;
+    --text-2: #5B5E66;
+    --text-3: #8C8F96;
+    --accent: #1A2B4A;
+    --accent-2: #2E4372;
+    --accent-soft: #E6EAF2;
+    --success: #2D5F3F;
+    --success-soft: #E3EDE5;
+    --warning: #8B5A1E;
+    --warning-soft: #F2E8D6;
+    --danger: #7A2E2E;
+    --danger-soft: #EFDEDE;
+    --muted: #9A9084;
+    --muted-soft: #ECE9E1;
+    --display: 'Instrument Serif', ui-serif, Georgia, serif;
+    --body: 'Inter Tight', ui-sans-serif, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--body); color: var(--text); background: var(--bg);
+    font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .display { font-family: var(--display); font-weight: 400; letter-spacing: -0.01em; }
+  .mono { font-family: var(--mono); font-size: 12.5px; }
+  .app { max-width: 1240px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  .header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px;
+  }
+  .header .brand-mark {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-2); margin-bottom: 10px;
+  }
+  .header .brand-mark::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%;
+  }
+  .header h1 {
+    font-family: var(--display); font-size: 42px; line-height: 1;
+    margin: 0; font-weight: 400; letter-spacing: -0.02em;
+  }
+  .header h1 em { font-style: italic; color: var(--accent); }
+  .header .meta { text-align: right; color: var(--text-2); font-size: 12px; font-family: var(--mono); letter-spacing: 0.05em; }
+
+  .upload {
+    border: 1.5px dashed var(--border-strong); border-radius: 4px;
+    padding: 60px 40px; text-align: center; background: var(--surface);
+    transition: all 0.2s; cursor: pointer;
+  }
+  .upload:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .upload.drag { border-color: var(--accent); background: var(--accent-soft); }
+  .upload h2 { font-family: var(--display); font-size: 28px; margin: 0 0 8px; font-weight: 400; }
+  .upload p { color: var(--text-2); margin: 0 0 24px; }
+  .upload .hint { margin-top: 20px; font-size: 12px; color: var(--text-3); font-family: var(--mono); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+    font-family: var(--body); font-size: 13px; font-weight: 500; cursor: pointer;
+    border-radius: 2px; transition: all 0.15s; text-decoration: none;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn.primary:hover { background: var(--accent-2); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--text-2); padding: 6px 10px; }
+  .btn.ghost:hover { color: var(--text); background: var(--surface-2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.sm { padding: 6px 12px; font-size: 12px; }
+
+  .mapper { background: var(--surface); border: 1px solid var(--border); padding: 28px; border-radius: 3px; }
+  .mapper h3 { font-family: var(--display); font-size: 22px; margin: 0 0 6px; font-weight: 400; }
+  .mapper .sub { color: var(--text-2); margin: 0 0 24px; font-size: 13px; }
+  .mapper .field {
+    display: grid; grid-template-columns: 180px 1fr; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--border); gap: 16px;
+  }
+  .mapper .field:last-child { border-bottom: none; }
+  .mapper .field label { font-size: 13px; font-weight: 500; }
+  .mapper .field label .req { color: var(--danger); margin-left: 3px; }
+  .mapper .field label .opt { color: var(--text-3); font-weight: 400; font-size: 11px; margin-left: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .mapper select {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border-strong);
+    background: var(--surface); font-family: var(--body); font-size: 13px;
+    border-radius: 2px; color: var(--text);
+  }
+  .mapper .actions { margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end; }
+
+  .results-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+  .results-header h2 { font-family: var(--display); font-size: 32px; margin: 0; font-weight: 400; }
+  .results-header .sub { color: var(--text-2); font-size: 13px; margin-top: 4px; font-family: var(--mono); }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; border-radius: 2px; }
+  .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-2); margin-bottom: 8px; font-family: var(--mono); }
+  .stat .value { font-family: var(--display); font-size: 36px; line-height: 1; font-weight: 400; }
+  .stat .sub { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; gap: 2px; }
+  .tab {
+    padding: 12px 18px; border: none; background: transparent; cursor: pointer;
+    font-family: var(--body); font-size: 13px; color: var(--text-2); font-weight: 500;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab .count {
+    font-family: var(--mono); font-size: 11px; background: var(--surface-2);
+    padding: 2px 7px; border-radius: 10px; margin-left: 8px; color: var(--text-2);
+  }
+  .tab.active .count { background: var(--accent-soft); color: var(--accent); }
+
+  .opcode-list { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+  .opcode-row {
+    display: grid; grid-template-columns: 140px 1fr 140px 80px 90px 140px;
+    gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border);
+    align-items: center; cursor: pointer; transition: background 0.12s;
+  }
+  .opcode-row:last-child { border-bottom: none; }
+  .opcode-row:hover { background: var(--surface-2); }
+  .opcode-row.open { background: var(--surface-2); }
+  .opcode-header-row {
+    display: grid; grid-template-columns: 140px 1fr 140px 80px 90px 140px;
+    gap: 14px; padding: 10px 20px; background: var(--surface-2);
+    border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-2); font-family: var(--mono);
+  }
+  .opcode-cell-code { font-family: var(--mono); font-weight: 500; font-size: 13px; }
+  .opcode-cell-desc { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .opcode-cell-rows { font-family: var(--mono); font-size: 12px; color: var(--text-2); text-align: right; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px;
+    border-radius: 2px; font-size: 12px; font-weight: 500; border: 1px solid;
+  }
+  .pill.cat { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft); }
+  .pill.conf-high { background: var(--success-soft); color: var(--success); border-color: var(--success-soft); }
+  .pill.conf-med { background: var(--warning-soft); color: var(--warning); border-color: var(--warning-soft); }
+  .pill.conf-low { background: var(--danger-soft); color: var(--danger); border-color: var(--danger-soft); }
+  .pill.conf-none { background: var(--muted-soft); color: var(--muted); border-color: var(--muted-soft); }
+  .pill.xs { font-size: 10.5px; padding: 2px 7px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pill.handled { background: var(--success-soft); color: var(--success); border-color: var(--success-soft); }
+  .pill.handled::before { content: '✓'; margin-right: 4px; font-weight: 700; }
+
+  .row-handled { background: linear-gradient(to right, rgba(45, 95, 63, 0.05), transparent 60%); }
+  .row-handled .opcode-cell-code { color: var(--success); }
+
+  .review-progress {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; margin-bottom: 12px; font-size: 12px;
+  }
+  .review-progress .count { font-family: var(--mono); color: var(--text-2); }
+  .review-progress .count strong { color: var(--text); }
+  .review-progress .bar-track {
+    flex: 1; height: 4px; background: var(--surface-2); margin: 0 16px;
+    border-radius: 2px; overflow: hidden; max-width: 400px;
+  }
+  .review-progress .bar-fill { height: 100%; background: var(--success); transition: width 0.3s; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(11, 11, 13, 0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 200;
+    animation: fadeIn 0.15s ease-out;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--surface); border-radius: 4px; max-width: 900px; width: 92%;
+    max-height: 85vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+  }
+  .modal-header h3 { font-family: var(--display); font-size: 22px; margin: 0; font-weight: 400; }
+  .modal-header .sub { font-size: 12px; color: var(--text-3); font-family: var(--mono); }
+  .modal-body {
+    flex: 1; overflow: auto; padding: 16px 24px;
+  }
+  .modal-body textarea {
+    width: 100%; height: 50vh; min-height: 300px; padding: 12px;
+    border: 1px solid var(--border); border-radius: 2px;
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.5;
+    background: var(--surface-2); color: var(--text); resize: vertical;
+  }
+  .modal-footer {
+    display: flex; gap: 10px; padding: 16px 24px;
+    border-top: 1px solid var(--border); justify-content: flex-end;
+    background: var(--surface-2);
+  }
+  .modal-hint {
+    font-size: 11.5px; color: var(--text-3); padding: 10px 24px 0; font-family: var(--mono);
+  }
+
+  .signal-bar {
+    display: flex; flex-direction: column; gap: 3px; font-family: var(--mono); font-size: 10px;
+  }
+  .signal-bar .track { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .signal-bar .fill { height: 100%; background: var(--accent); transition: width 0.2s; }
+  .signal-bar .fill.high { background: var(--success); }
+  .signal-bar .fill.med { background: var(--warning); }
+  .signal-bar .fill.low { background: var(--danger); }
+  .signal-bar .labels { display: flex; justify-content: space-between; color: var(--text-3); font-size: 9.5px; letter-spacing: 0.05em; }
+
+  .opcode-detail { padding: 0 20px 22px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+  .opcode-detail .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; padding-top: 4px; }
+  .opcode-detail h4 { font-family: var(--display); font-size: 15px; margin: 0 0 10px; font-weight: 400; color: var(--text-2); letter-spacing: 0; }
+  .desc-list { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+  .desc-item { display: grid; grid-template-columns: 1fr 54px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .desc-item:last-child { border-bottom: none; }
+  .desc-item .count { color: var(--text-3); font-family: var(--mono); text-align: right; font-size: 11.5px; }
+  .desc-item .text { color: var(--text); }
+  .desc-item.correction { background: var(--surface-2); font-style: italic; color: var(--text-2); }
+
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .mini-stat { background: var(--surface); border: 1px solid var(--border); padding: 10px 12px; border-radius: 2px; }
+  .mini-stat .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); font-family: var(--mono); margin-bottom: 4px; }
+  .mini-stat .value { font-family: var(--mono); font-size: 13px; color: var(--text); }
+  .mini-stat .cv { font-size: 11px; margin-left: 6px; }
+  .cv-good { color: var(--success); } .cv-ok { color: var(--warning); } .cv-bad { color: var(--danger); }
+
+  .reason-box { background: var(--surface); border: 1px solid var(--border); padding: 12px 14px; border-radius: 2px; font-size: 12.5px; line-height: 1.55; color: var(--text-2); }
+  .reason-box .label { font-family: var(--mono); text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 4px; display: block; }
+
+  .kb-matches { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; margin-top: 12px; }
+  .kb-match {
+    display: grid; grid-template-columns: 60px 1fr 100px; padding: 8px 12px;
+    border-bottom: 1px solid var(--border); font-size: 12px; align-items: center;
+  }
+  .kb-match:last-child { border-bottom: none; }
+  .kb-match .score { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
+  .kb-match .desc-cell .op { font-family: var(--mono); font-size: 11.5px; color: var(--text); margin-right: 6px; }
+  .kb-match .desc-cell .dsc { color: var(--text-2); font-size: 11.5px; }
+  .kb-match .desc-cell .src { color: var(--text-3); font-size: 10.5px; font-family: var(--mono); margin-top: 2px; }
+
+  .override-row {
+    margin-top: 14px; display: flex; align-items: center; gap: 10px;
+    padding-top: 14px; border-top: 1px dashed var(--border-strong);
+  }
+  .override-row label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .override-row select {
+    padding: 6px 10px; border: 1px solid var(--border-strong); background: var(--surface);
+    font-family: var(--body); font-size: 12px; border-radius: 2px; color: var(--text);
+  }
+
+  .toolbar {
+    display: flex; gap: 10px; margin-bottom: 16px; padding: 14px 20px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+    align-items: center; flex-wrap: wrap;
+  }
+  .toolbar .label {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-2); margin-right: auto;
+  }
+  .toolbar .kb-badge {
+    font-family: var(--mono); font-size: 11px; color: var(--text-2);
+    padding: 4px 10px; background: var(--surface-2); border-radius: 2px;
+  }
+  .toolbar .kb-badge strong { color: var(--text); }
+
+  .dealer-field {
+    display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 16px;
+  }
+  .dealer-field label { font-size: 12px; font-weight: 500; color: var(--text-2); white-space: nowrap; }
+  .dealer-field input {
+    flex: 1; padding: 6px 10px; border: 1px solid var(--border); background: transparent;
+    font-family: var(--body); font-size: 13px; color: var(--text); border-radius: 2px;
+  }
+  .dealer-field input:focus { outline: none; border-color: var(--accent); }
+
+  .empty { padding: 60px 20px; text-align: center; color: var(--text-3); }
+  .empty h3 { font-family: var(--display); font-weight: 400; font-size: 22px; color: var(--text-2); margin: 0 0 6px; }
+
+  .chevron { color: var(--text-3); font-size: 10px; transition: transform 0.15s; }
+  .open .chevron { transform: rotate(90deg); color: var(--text); }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--text);
+    color: white; padding: 10px 16px; border-radius: 2px; font-size: 13px;
+    animation: slideUp 0.2s ease-out; z-index: 100;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .opcode-row, .opcode-header-row { grid-template-columns: 100px 1fr 100px 60px; }
+    .opcode-header-row span:nth-child(5), .opcode-header-row span:nth-child(6),
+    .opcode-row > *:nth-child(5), .opcode-row > *:nth-child(6) { display: none; }
+    .opcode-detail .grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div id="root"></div>
+
+<script type="text/babel" data-type="module">
+const { useState, useMemo, useRef, useCallback, useEffect } = React;
+
+/* ============================================================
+   CATEGORIES
+   ============================================================ */
+
+const CATEGORY_LIST = [
+  'AC Service',
+  'Air Filter',
+  'Alignment',
+  'All Wheel Drive',
+  'Brake Fluid',
+  'Cabin Filter',
+  'Coolant',
+  'Fuel Induction/Injector Service',
+  'Front Differential',
+  'Rear Differential',
+  'Transfer Case',
+  'Transmission',
+  'Power Steering',
+  'Service Packages',
+  '1 Tire',
+  '2 Tire',
+  '3 Tire',
+  '4 Tire',
+];
+
+/* ============================================================
+   SEED KNOWLEDGE BASE (67 entries from Blake's GPT KB v2)
+   Each entry: { opCode, description, category, source }
+   The KB grows at runtime as the user confirms overrides.
+   ============================================================ */
+
+const SEED_KB = [
+  {opCode:"321",description:"performed four wheel alignment",category:"Alignment",source:"seed"},
+  {opCode:"013",description:"air filter",category:"Air Filter",source:"seed"},
+  {opCode:"100KP",description:"service package",category:"Service Packages",source:"seed"},
+  {opCode:"30KP",description:"service package",category:"Service Packages",source:"seed"},
+  {opCode:"ALIGN",description:"perform four wheel alignment",category:"Alignment",source:"seed"},
+  {opCode:"4WA",description:"performed four wheel alignment",category:"Alignment",source:"seed"},
+  {opCode:"4X4",description:"perform 4x4 service",category:"All Wheel Drive",source:"seed"},
+  {opCode:"4X4SERV",description:"perform 4 wheel drive service",category:"All Wheel Drive",source:"seed"},
+  {opCode:"50KS",description:"service package",category:"Service Packages",source:"seed"},
+  {opCode:"AC09",description:"replace cabin air filter",category:"Cabin Filter",source:"seed"},
+  {opCode:"AF",description:"replace engine air filter",category:"Air Filter",source:"seed"},
+  {opCode:"AF2",description:"replace engine air filter",category:"Air Filter",source:"seed"},
+  {opCode:"AG36",description:"cabin filter replaced",category:"Cabin Filter",source:"seed"},
+  {opCode:"AIR",description:"replace engine air filter",category:"Air Filter",source:"seed"},
+  {opCode:"ATFDRF",description:"transmission service",category:"Transmission",source:"seed"},
+  {opCode:"ATFEXCH",description:"perform transmission exchange",category:"Transmission",source:"seed"},
+  {opCode:"ATFX",description:"automatic transmission service",category:"Transmission",source:"seed"},
+  {opCode:"BFEXCH",description:"brake fluid exchange service",category:"Brake Fluid",source:"seed"},
+  {opCode:"BFF",description:"performed brake fluid flush",category:"Brake Fluid",source:"seed"},
+  {opCode:"BFF2",description:"completed brake fluid service",category:"Brake Fluid",source:"seed"},
+  {opCode:"BG4X4DL",description:"4x4 driveline service",category:"All Wheel Drive",source:"seed"},
+  {opCode:"BGATF",description:"completed transmission flush",category:"Transmission",source:"seed"},
+  {opCode:"BGBF",description:"brake fluid flush",category:"Brake Fluid",source:"seed"},
+  {opCode:"BGCOMPFUEL",description:"fuel system cleaning service complete",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"BGCSS",description:"coolant flush service",category:"Coolant",source:"seed"},
+  {opCode:"BGISK",description:"air induction service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"BRF",description:"brake fluid service",category:"Brake Fluid",source:"seed"},
+  {opCode:"CABAIR",description:"cabin air filter with frigifresh",category:"Cabin Filter",source:"seed"},
+  {opCode:"CABIN",description:"cabin air filter",category:"Cabin Filter",source:"seed"},
+  {opCode:"CAF",description:"replace cabin air filter",category:"Cabin Filter",source:"seed"},
+  {opCode:"CF",description:"coolant service",category:"Coolant",source:"seed"},
+  {opCode:"COMPFUEL",description:"fuel system service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"COMPLETE",description:"complete fuel system service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"COOLEX",description:"coolant service",category:"Coolant",source:"seed"},
+  {opCode:"COOLX",description:"coolant exchange",category:"Coolant",source:"seed"},
+  {opCode:"CVTDRF",description:"CVT transmisssion exchange with EOM fluid",category:"Transmission",source:"seed"},
+  {opCode:"FDIFF",description:"front differential service",category:"Front Differential",source:"seed"},
+  {opCode:"FIC",description:"fuel injection service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"FID",description:"diesel fuel induction service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"FIS",description:"fuel system cleaning cleaning",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"FS02",description:"four wheel alignment",category:"Alignment",source:"seed"},
+  {opCode:"H003",description:"rear differential drain/fill service",category:"Rear Differential",source:"seed"},
+  {opCode:"H24F",description:"performed four wheel alignment",category:"Alignment",source:"seed"},
+  {opCode:"H24Y",description:"coolant fluid exchange",category:"Coolant",source:"seed"},
+  {opCode:"H6D",description:"brake fluid flush",category:"Brake Fluid",source:"seed"},
+  {opCode:"H7A9",description:"transmission service",category:"Transmission",source:"seed"},
+  {opCode:"MA30",description:"air filter replaced",category:"Air Filter",source:"seed"},
+  {opCode:"MA31",description:"air filter replaced",category:"Air Filter",source:"seed"},
+  {opCode:"MA32",description:"air filter replaced",category:"Air Filter",source:"seed"},
+  {opCode:"MA33",description:"air filter replaced",category:"Air Filter",source:"seed"},
+  {opCode:"MA83",description:"replaced cabin filter",category:"Cabin Filter",source:"seed"},
+  {opCode:"MF",description:"replaced microfilter",category:"Cabin Filter",source:"seed"},
+  {opCode:"MF2",description:"replaced microfilters",category:"Cabin Filter",source:"seed"},
+  {opCode:"MOC10",description:"performed transmission service",category:"Transmission",source:"seed"},
+  {opCode:"MOC11",description:"perform transmission service 9speed or 10speed",category:"Transmission",source:"seed"},
+  {opCode:"MOC12",description:"perform coolant service",category:"Coolant",source:"seed"},
+  {opCode:"MOC17",description:"perform power steering fluid exchange",category:"Power Steering",source:"seed"},
+  {opCode:"MOC18",description:"perform rear differential service",category:"Rear Differential",source:"seed"},
+  {opCode:"MOC20",description:"perform brake fluid exchange",category:"Brake Fluid",source:"seed"},
+  {opCode:"MOC5",description:"perform GDI fuel induction service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"MOC7",description:"complete fuel system service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"MOC9",description:"perform transmission service",category:"Transmission",source:"seed"},
+  {opCode:"PSFSERV",description:"power steering fluid service",category:"Power Steering",source:"seed"},
+  {opCode:"RDIFF",description:"rear differential service",category:"Rear Differential",source:"seed"},
+  {opCode:"TCASE",description:"perform transfer case service",category:"Transfer Case",source:"seed"},
+  {opCode:"TCS",description:"transfer case fluid service drain and refill",category:"Transfer Case",source:"seed"},
+  {opCode:"VSALIGN",description:"four way wheel alignment",category:"Alignment",source:"seed"},
+  // Extra seeds added to improve coverage for common real-world patterns Blake's KB was thin on:
+  {opCode:"SCHEDMAINT",description:"factory scheduled maintenance",category:"Service Packages",source:"seed"},
+  {opCode:"15K",description:"15000 mile service",category:"Service Packages",source:"seed"},
+  {opCode:"30K",description:"30000 mile service",category:"Service Packages",source:"seed"},
+  {opCode:"60K",description:"60000 mile service",category:"Service Packages",source:"seed"},
+  {opCode:"90K",description:"90000 mile service",category:"Service Packages",source:"seed"},
+  {opCode:"120K",description:"120000 mile scheduled maintenance",category:"Service Packages",source:"seed"},
+  {opCode:"MINDER",description:"maintenance minder service",category:"Service Packages",source:"seed"},
+  {opCode:"A1",description:"a1 maintenance minder",category:"Service Packages",source:"seed"},
+  {opCode:"B1",description:"b1 maintenance minder",category:"Service Packages",source:"seed"},
+  {opCode:"MAINTPKG",description:"maintenance package",category:"Service Packages",source:"seed"},
+  // Fuel Induction/Injector variants — seed lacked explicit "injector" phrasings
+  {opCode:"3IF",description:"3 part injector flush",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"INJFLUSH",description:"fuel injector flush",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"INJSERV",description:"fuel injector service",category:"Fuel Induction/Injector Service",source:"seed"},
+  {opCode:"MOCFI",description:"MOC fuel injection cleaning service",category:"Fuel Induction/Injector Service",source:"seed"},
+  // Common modern transmission phrasings
+  {opCode:"ATF10",description:"10 speed transmission fluid exchange",category:"Transmission",source:"seed"},
+  {opCode:"ATF8",description:"8 speed transmission fluid exchange",category:"Transmission",source:"seed"},
+  {opCode:"ATF6",description:"6 speed transmission fluid exchange",category:"Transmission",source:"seed"},
+  {opCode:"CVTFL",description:"cvt fluid flush",category:"Transmission",source:"seed"},
+  // Cooling system variants
+  {opCode:"CSF",description:"cooling system flush",category:"Coolant",source:"seed"},
+  {opCode:"RADFLUSH",description:"radiator flush and refill",category:"Coolant",source:"seed"},
+  // Tire operations — mount/R&R with count. The KB description uses distinctive
+  // mount/install verbs (not balance) so balance-only descriptions won't match well.
+  {opCode:"MT1",description:"mount one tire",category:"1 Tire",source:"seed"},
+  {opCode:"TIRE1",description:"mount and balance one tire",category:"1 Tire",source:"seed"},
+  {opCode:"RR1",description:"r and r one tire",category:"1 Tire",source:"seed"},
+  {opCode:"MT2",description:"mount two tires",category:"2 Tire",source:"seed"},
+  {opCode:"TIRE2",description:"mount and balance two tires",category:"2 Tire",source:"seed"},
+  {opCode:"RR2",description:"r and r two tires",category:"2 Tire",source:"seed"},
+  {opCode:"MT3",description:"mount three tires",category:"3 Tire",source:"seed"},
+  {opCode:"TIRE3",description:"mount and balance three tires",category:"3 Tire",source:"seed"},
+  {opCode:"MT4",description:"mount four tires",category:"4 Tire",source:"seed"},
+  {opCode:"TIRE4",description:"mount and balance four tires",category:"4 Tire",source:"seed"},
+  {opCode:"RR4",description:"r and r four tires",category:"4 Tire",source:"seed"},
+  {opCode:"NEWTIRES",description:"install new tires",category:"4 Tire",source:"seed"},
+  // AC Service — AC Fresh (refrigerant recharge/refresh) and AC Evaporator (frigifresh treatment).
+  // Does NOT cover component replacement (compressor, condenser, evaporator core) or diagnostic work.
+  {opCode:"ACSERV",description:"ac service",category:"AC Service",source:"seed"},
+  {opCode:"ACFRESH",description:"ac refresh service",category:"AC Service",source:"seed"},
+  {opCode:"ACREFRESH",description:"ac system refresh",category:"AC Service",source:"seed"},
+  {opCode:"ACRECH",description:"ac recharge service",category:"AC Service",source:"seed"},
+  {opCode:"ACEVAP",description:"ac evaporator service",category:"AC Service",source:"seed"},
+  {opCode:"EVAPCLN",description:"evaporator cleaning service",category:"AC Service",source:"seed"},
+  {opCode:"FRIGI",description:"frigifresh evaporator treatment",category:"AC Service",source:"seed"},
+  {opCode:"MOCAC",description:"MOC ac refresh service",category:"AC Service",source:"seed"},
+  {opCode:"BGFRIGI",description:"BG frigifresh ac treatment",category:"AC Service",source:"seed"},
+  // AC complaint descriptions that dealers set up as AC Service codes
+  {opCode:"ACCOOL",description:"ac not cooling",category:"AC Service",source:"seed"},
+  {opCode:"ACCOLD",description:"ac not blowing cold",category:"AC Service",source:"seed"},
+  {opCode:"ACWARM",description:"ac blowing warm",category:"AC Service",source:"seed"},
+  {opCode:"ACHEAT",description:"ac heating concern",category:"AC Service",source:"seed"},
+  {opCode:"ACREP",description:"ac repair",category:"AC Service",source:"seed"},
+  {opCode:"ACWORK",description:"ac stopped working",category:"AC Service",source:"seed"},
+  {opCode:"ACCHECK",description:"ac concern check and advise",category:"AC Service",source:"seed"},
+  {opCode:"ACOP",description:"ac operation check",category:"AC Service",source:"seed"},
+  {opCode:"FRESH",description:"ac fresh service clean ac system",category:"AC Service",source:"seed"},
+  {opCode:"ACCLEAN",description:"clean ac system and condenser",category:"AC Service",source:"seed"},
+];
+
+/* ============================================================
+   NORMALIZATION + TOKENIZATION
+   ============================================================ */
+
+// Stopwords — common action verbs, fillers, and words that add no category signal.
+// IMPORTANT: 'package' and 'maintenance' are NOT stopwords — they're Service Package signals.
+const STOPWORDS = new Set([
+  'a','an','the','and','or','of','to','in','on','for','per','with','without','at','by','from','up','as','is','are','was','were','be','been','being',
+  'perform','performed','performing','complete','completed','completing','completely',
+  'replace','replaced','replacing','install','installed','installing','new','done','all',
+  'this','that','these','those','change','changed','changes','changing',
+  'customer','vehicle','repair','work','order','dealer','dealership','car','truck',
+  'states','state','also','full','every','each','only','will','need','needs',
+  'our','their','your','my','if','when','because','due','so','then','just','very','much',
+  'service','services','serviced','servicing',
+  'bg','moc','products','product','freestyle','synthetic',
+  'nc','cp','special','special',
+]);
+
+// Content tokens that should get a category-boost weight when matching
+const CONTENT_BOOST = new Set([
+  'brake','fluid','flush','exchange','coolant','antifreeze','cabin','engine','air','filter',
+  'microfilter','transmission','atf','cvt','trans','transfer','case','differential','diff',
+  'rear','front','axle','alignment','wheel','four','power','steering','psf','fuel',
+  'induction','injection','injector','gdi','scheduled','maintenance','minder','factory',
+  'mile','miles','package','packages','intake',
+  'awd','4x4','4wd','driveline',
+  'tire','tires','mount','mounted','mounting','dismount','installation',
+  'ac','evaporator','refrigerant','refresh','recharge','frigifresh','freon','hvac',
+]);
+
+// Synonym normalization — collapse variant spellings to a canonical token before matching.
+// This handles cases like "injector" vs "injection" (both → "injector") and common typos.
+const TOKEN_SYNONYMS = {
+  'injection': 'injector',
+  'injections': 'injector',
+  'injectors': 'injector',
+  'inject': 'injector',
+  'tranmission': 'transmission',
+  'tranny': 'transmission',
+  'transmisssion': 'transmission',
+  'diffrential': 'differential',
+  'differentials': 'differential',
+  'differenial': 'differential',
+  'difference': 'differential',
+  'filters': 'filter',
+  'flushed': 'flush',
+  'flushing': 'flush',
+  'alignments': 'alignment',
+  'align': 'alignment',
+  'coolants': 'coolant',
+  'antifreeze': 'coolant',
+  'intervals': 'interval',
+  'intvl': 'interval',
+  'scheduled': 'scheduled',
+  'schedule': 'scheduled',
+  'maint': 'maintenance',
+  'tcase': 'transfer',
+  'xfer': 'transfer',
+  'xfercase': 'transfer',
+};
+
+function normalizeForComparison(desc) {
+  if (!desc) return '';
+  let d = String(desc).toLowerCase();
+  // Pre-expand brand terms and acronyms BEFORE stripping punctuation, otherwise
+  // "a/c" becomes "a c" and both get filtered out as too short.
+  d = d.replace(/\ba\s*\/\s*c\b/g, 'ac');              // "A/C" or "A / C" → "ac"
+  d = d.replace(/\bair[\s\-]+conditioning\b/g, 'ac');   // "air conditioning" / "air-conditioning" → "ac"
+  d = d.replace(/\bfrigi[\s\-]*fresh\b/g, 'frigifresh'); // "frigi-fresh" / "frigi fresh" → "frigifresh"
+  // Collapse two-word forms to the single-token form the KB uses
+  d = d.replace(/\bmicro[\s\-]+filter/g, 'microfilter'); // "micro filter" / "micro-filter" → "microfilter"
+  d = d.replace(/\bmicro[\s\-]+filters/g, 'microfilter');
+  return d
+    .replace(/\$[\d,.]+/g, ' ')            // strip dollar amounts like "$69.95"
+    .replace(/\d+\s*(?:\/\s*\d+)?/g, ' ')  // strip numbers (incl. "3/31" etc)
+    .replace(/[^a-z\s]/g, ' ')             // strip punctuation / non-alpha
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function tokenize(desc) {
+  const norm = normalizeForComparison(desc);
+  return norm.split(' ')
+    .filter(t => t && t.length >= 2 && !STOPWORDS.has(t))
+    .map(t => TOKEN_SYNONYMS[t] || t);
+}
+
+function tokenSet(desc) {
+  return new Set(tokenize(desc));
+}
+
+/* ============================================================
+   DESCRIPTION SIMILARITY (KB token coverage, boosted for content tokens)
+   ============================================================ */
+
+// Weighted coverage: what fraction of KB entry's content tokens appear in input.
+// Weight content tokens 2x so "brake fluid flush" can't be matched by coincidence.
+function weighted(tokens) {
+  let w = 0;
+  for (const t of tokens) w += (CONTENT_BOOST.has(t) ? 2 : 1);
+  return w;
+}
+
+// Contiguous-phrase detection: does the KB description's content tokens appear as
+// a tight phrase inside the input? This catches long marketing-copy descriptions
+// where the actual service language ("brake fluid exchange") is buried in filler.
+function phrasePresence(inputTokens, kbTokens) {
+  // kbTokens is an ordered array here, not a set
+  const contentKb = kbTokens.filter(t => CONTENT_BOOST.has(t));
+  if (contentKb.length < 2) return 0;
+  // Look for the KB content phrase within the input as a subsequence within a small window
+  const joined = inputTokens.join(' ');
+  const phrase = contentKb.join(' ');
+  if (joined.includes(phrase)) return 1.0;
+  // Partial: check for 2+ consecutive KB content tokens in the input
+  let bestRun = 0;
+  for (let i = 0; i < inputTokens.length; i++) {
+    let run = 0;
+    let kbIdx = 0;
+    for (let j = i; j < inputTokens.length && kbIdx < contentKb.length; j++) {
+      if (inputTokens[j] === contentKb[kbIdx]) { run++; kbIdx++; }
+      else if (CONTENT_BOOST.has(inputTokens[j])) break; // non-matching content token breaks
+    }
+    if (run > bestRun) bestRun = run;
+  }
+  return bestRun >= 2 ? (bestRun / contentKb.length) * 0.8 : 0;
+}
+
+function descSimilarity(inputText, kbText) {
+  const inputTokenArr = tokenize(inputText);
+  const kbTokenArr = tokenize(kbText);
+  const inputTokens = new Set(inputTokenArr);
+  const kbTokens = new Set(kbTokenArr);
+  if (kbTokens.size === 0 || inputTokens.size === 0) return 0;
+
+  let matchWeight = 0, kbWeight = 0;
+  for (const t of kbTokens) {
+    const w = CONTENT_BOOST.has(t) ? 2 : 1;
+    kbWeight += w;
+    if (inputTokens.has(t)) matchWeight += w;
+  }
+  // coverage: KB concepts present in input
+  const coverage = matchWeight / kbWeight;
+
+  // input-coverage: don't let a 20-word input match a 2-word KB trivially
+  let inputMatchWeight = 0, inputTotalWeight = 0;
+  for (const t of inputTokens) {
+    const w = CONTENT_BOOST.has(t) ? 2 : 1;
+    inputTotalWeight += w;
+    if (kbTokens.has(t)) inputMatchWeight += w;
+  }
+  const inputCoverage = inputTotalWeight > 0 ? inputMatchWeight / inputTotalWeight : 0;
+
+  // Phrase presence: rewards KB terms appearing as a contiguous phrase in input.
+  // This is what catches "DURING INSPECTION FOUND BRAKE FLUID TO BE CONTAIMINATED
+  // RECOMMEND A BRAKE FLUID EXCHANGE" — the KB phrase "brake fluid exchange" IS in there.
+  const phraseScore = phrasePresence(inputTokenArr, kbTokenArr);
+
+  // Blend: coverage dominates, input-coverage disambiguates, phrase-presence rescues marketing copy
+  const base = 0.70 * coverage + 0.15 * inputCoverage + 0.15 * phraseScore;
+
+  // Floor: if the full KB phrase is present in the input, the match is at LEAST strong
+  // regardless of the input's length. Marketing copy rescue.
+  if (phraseScore >= 0.95) return Math.max(base, 0.75);
+  return base;
+}
+
+// Best similarity between an op code's dominant repeated description and a KB entry.
+// CRITICAL: we match only against the most-repeated normalized description cluster,
+// not the top-N raw descriptions. A 79-row "CONFIRM FRAME VIN" op code with 2 minority rows
+// of "engine and cabin filters" should not classify as a filter service just because the
+// minority rows match the KB.
+function bestDescSim(descCounts, kbText) {
+  const normCounts = new Map();
+  for (const [d, c] of Object.entries(descCounts)) {
+    const n = normalizeForComparison(d);
+    if (!n) continue;
+    if (!normCounts.has(n)) normCounts.set(n, { raw: d, count: 0 });
+    normCounts.get(n).count += c;
+  }
+  if (normCounts.size === 0) return 0;
+  const sorted = [...normCounts.entries()].sort((a, b) => b[1].count - a[1].count);
+  // Use the dominant cluster's representative description
+  return descSimilarity(sorted[0][1].raw, kbText);
+}
+
+/* ============================================================
+   OP CODE SIMILARITY (supporting signal only)
+   ============================================================ */
+
+function trigrams(s) {
+  const padded = '  ' + String(s).toUpperCase() + '  ';
+  const set = new Set();
+  for (let i = 0; i < padded.length - 2; i++) set.add(padded.slice(i, i + 3));
+  return set;
+}
+
+function opSimilarity(codeA, codeB) {
+  const a = String(codeA).toUpperCase();
+  const b = String(codeB).toUpperCase();
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  // Substring bonus (catches 02MOCBFF containing BFF)
+  const longer = a.length >= b.length ? a : b;
+  const shorter = a.length >= b.length ? b : a;
+  let substrBonus = 0;
+  if (shorter.length >= 3 && longer.includes(shorter)) {
+    substrBonus = shorter.length / Math.max(longer.length, 6);
+  }
+  // Trigram Jaccard
+  const ta = trigrams(a), tb = trigrams(b);
+  let inter = 0;
+  for (const t of ta) if (tb.has(t)) inter++;
+  const union = ta.size + tb.size - inter;
+  const jac = union > 0 ? inter / union : 0;
+  return Math.min(1, Math.max(jac, substrBonus * 0.9));
+}
+
+/* ============================================================
+   REPETITION SCORE — the new primary signal
+   ============================================================ */
+
+function repetitionScore(descCounts, rowCount) {
+  if (rowCount === 0) return { score: 0, topNormalized: null, topCount: 0 };
+  // Group by normalized description — "REPLACE CABIN AIR FILTER = $69.95" and
+  // "REPLACE CABIN AIR FILTER = $55.00" collapse to the same normalized key.
+  const normalized = new Map();
+  for (const [desc, count] of Object.entries(descCounts)) {
+    const n = normalizeForComparison(desc);
+    if (!n) continue;
+    normalized.set(n, (normalized.get(n) || 0) + count);
+  }
+  if (normalized.size === 0) return { score: 0, topNormalized: null, topCount: 0 };
+  let topKey = null, topCount = 0;
+  for (const [k, c] of normalized.entries()) if (c > topCount) { topCount = c; topKey = k; }
+  // Sum the top 2 normalized variants (minor wording shifts count as same service)
+  const sorted = [...normalized.values()].sort((a, b) => b - a);
+  const topTwo = (sorted[0] || 0) + (sorted[1] || 0);
+  return {
+    score: topTwo / rowCount,
+    topNormalized: topKey,
+    topCount,
+    uniqueNormalized: normalized.size,
+  };
+}
+
+/* ============================================================
+   EXCLUSIONS — description-based only (per Blake: don't gate on op code)
+   ============================================================ */
+
+const DESC_EXCLUSION_PATTERNS = [
+  /oil change/,
+  /oil and filter/,
+  /lube[,\s]?oil[,\s]?filter/,
+  /\blof\b/,
+  /multi[\s\-]?point (?:inspection|vehicle)/,
+  /multipoint (?:inspection|vehicle)/,
+  /\bmpvi?\b/,
+  /tire rotation/,
+  /rotate tires/,
+  /rotate and balance/,
+  /^(?:tire|wheel)\s+balance/,
+  /\bbalance\s+(?:tires?|wheels?)\s*(?:only)?\s*$/,
+  /\bbalance\s+only\b/,
+  /tire\s+(?:repair|patch|plug)/,
+  /flat\s+repair/,
+  /wiper\s+(?:blade|insert)/,
+  /\b(?:replace|install)\s+(?:front|rear)?\s*wiper/,
+  /replace wiper/,
+  /battery replacement/,
+  /replace battery/,
+  /\bfuel filter\b/,
+  /replace fuel filter/,
+  /state inspection/,
+  /safety inspection/,
+  /emissions test/,
+  /\brecall\b/,
+  /shop supplies/,
+  /loaner/,
+  /rental car/,
+  /courtesy (?:uber|ride|transport)/,
+  /tint(?:ing)? window/,
+  /wash vehicle/,
+  /used car (?:detail|inspection|state)/,
+  /personal data/,
+  /pdi[-\s]gm/,
+  /stock\s+1st/,
+  // Certified pre-owned inspections — not a preventive service
+  /certified\s+pre[\s\-]*owned/,
+  /pre[\s\-]owned\s+(?:inspection|vehicle)/,
+  /\bcpo\s+(?:inspection|vehicle|check)/,
+  /quality\s+control\s+inspection/,
+  /shop\s+foreman/,
+  // Nitrogen tire fill — not a mount operation
+  /nitrogen\s+(?:fill|service)/,
+  /(?:fill|drain).*with\s+nitrogen/,
+  /with\s+nitrogen\s+(?:gas|fill)/,
+  // AC component-replacement work — physical parts, not preventive service
+  /replace\s+(?:a\/c|ac|air\s+conditioning)\s+(?:compressor|condenser|evaporator\s+core|accumulator|expansion\s+valve|line)/,
+  /(?:a\/c|ac|air\s+conditioning)\s+compressor\s+(?:replacement|repair)/,
+  // NOTE: AC complaint/diagnostic descriptions ("AC not cooling") are NOT excluded —
+  // many dealers set up AC complaint codes that live under the AC Service category.
+  // Let the classifier decide via normal scoring.
+];
+
+// Very narrow op code exclusions — only things that are *never* services regardless of description
+const OP_EXCLUSION_PATTERNS = [
+  /^RECALL$/,
+  /^NHTSA/,
+  /^N\d{8,}/,      // manufacturer campaign codes like N252516900
+  /^\d{7,}$/,      // pure 7+ digit campaign codes (most services are shorter)
+  /^LOANER$/,
+  /^RENTAL$/,
+  /^UBER$/,
+  /^SUBLET$/,
+  /^WASH$/,
+  /^\d+WASH$/,     // 01WASH, 02WASH
+  /^DETAIL$/,
+  /^\d+T$/,        // 75T tint window
+  /^XTIME\d*$/,    // scheduling system markers
+  /^NULL$/,
+  /^NONE$/,
+];
+
+// Service Package indicators — descriptions containing these are bundles, not individual services.
+// Even if they mention LOF/tire rotation components inside, they should classify as Service Package,
+// not be excluded.
+const PACKAGE_INDICATORS = [
+  /scheduled\s+maintenance/,
+  /factory\s+scheduled/,
+  /maintenance\s+package/,
+  /service\s+package/,
+  /\d+[,\.]?\d*\s*(?:k|mile|mi)\s*(?:service|maintenance)/,
+  /\b\d{2,3}k\b/,  // "30K", "60K", "90K"
+  /maintenance\s+minder/,
+  /minder\s+[a-b][\d]?/,
+  /\b[a-b]\d?\s+(?:service|maintenance)/,
+  /\d+(?:st|nd|rd|th)\s+scheduled/,
+  /\bgm\s+(?:scheduled|maintenance)/i,
+  /oil\s+life/,
+];
+
+function isPackageDescription(descCounts) {
+  // Check the DOMINANT description only — not any description. A code where the
+  // majority of rows are "OIL CHANGE" and one minority row mentions "scheduled" is
+  // not a package code.
+  const desc = dominantDescription(descCounts);
+  if (PACKAGE_INDICATORS.some(p => p.test(desc))) return true;
+  // Also treat as package: bundled engine AND cabin filter in same description
+  // (these are package inserts, not individual filter replacements)
+  const hasEngine = /engine\s+(?:air\s+)?filter/.test(desc) || /engine\s+and\s+cabin/.test(desc);
+  const hasCabin = /cabin\s+(?:air\s+)?filter/.test(desc) || /engine\s+and\s+cabin/.test(desc);
+  if (hasEngine && hasCabin) return true;
+  return false;
+}
+
+function checkExclusion(opCode, descCounts, rowCount) {
+  // Package bypass FIRST — if the dominant description is a scheduled maintenance
+  // package, never exclude on op code pattern. Codes like 0600743 (GM 1st scheduled
+  // maintenance) would otherwise be wrongly killed by the 7+ digit campaign-code rule.
+  if (isPackageDescription(descCounts)) {
+    return { excluded: false };
+  }
+  // Op code hard-exclusions (minimal list — only unambiguous non-service patterns)
+  if (OP_EXCLUSION_PATTERNS.some(p => p.test(opCode))) {
+    return { excluded: true, reason: 'Op code matches non-service pattern (recall, campaign, rental, detail, wash)' };
+  }
+  // Description-based: if majority of rows match exclusion patterns
+  let excludedRows = 0, total = 0;
+  for (const [desc, count] of Object.entries(descCounts)) {
+    const d = desc.toLowerCase();
+    if (DESC_EXCLUSION_PATTERNS.some(p => p.test(d))) excludedRows += count;
+    total += count;
+  }
+  if (total > 0 && excludedRows / total >= 0.5) {
+    const pct = Math.round(excludedRows / total * 100);
+    return { excluded: true, reason: `${pct}% of rows describe excluded work (oil change, MPI, rotation, wiper, battery, fuel filter, recall, wash, etc.)` };
+  }
+  return { excluded: false };
+}
+
+/* ============================================================
+   DISAMBIGUATION RULES (applied after KB matching)
+   ============================================================ */
+
+function dominantDescription(descCounts) {
+  // Return the single most frequent raw description, lowercased — not a concatenation.
+  // Disambiguation rules should only fire when the *repeated* description shows the pattern,
+  // not when some minority row happens to contain a stray word.
+  let topDesc = '', topCount = 0;
+  for (const [d, c] of Object.entries(descCounts)) {
+    if (c > topCount) { topCount = c; topDesc = d; }
+  }
+  return topDesc.toLowerCase();
+}
+
+/* ============================================================
+   TIRE OPERATION DETECTION
+   Tire count (1/2/3/4) can't come from KB similarity because numbers
+   get stripped in normalization. It has to come from the raw description.
+   A "tire operation" is mount / R&R / replacement — NOT balance-only.
+   ============================================================ */
+
+function isTireOperation(desc) {
+  const d = desc.toLowerCase();
+  // Must reference tire(s)
+  if (!/\btires?\b/.test(d)) return false;
+
+  // REJECT tire-accessory and tire-adjacent work — these mention "tire" but are not
+  // tire mount/R&R operations. Guarding here keeps the tire path from hijacking:
+  //   - TPMS / tire pressure sensor work
+  //   - Valve stem or stud replacement
+  //   - Spare tire handling
+  //   - Tire repair / patch / plug / flat
+  //   - Rotation or balance-only work
+  if (/\btpms\b|tire\s+pressure\s+(?:monitor|sensor)/.test(d)) return false;
+  if (/valve\s+stem|wheel\s+stem|tire\s+stem/.test(d)) return false;
+  if (/\bspare\s+tire\b/.test(d)) return false;
+  if (/tire\s+(?:repair|patch|plug|flat|leak)/.test(d)) return false;
+  if (/flat\s+repair|plug\s+(?:a\s+)?tire/.test(d)) return false;
+  if (/\bonly\s+(?:balance|rotate|rotation)/.test(d)) return false;
+
+  // Must involve a billable tire verb (mount, dismount, R&R, replace, install)
+  const hasMount = /\bmount\b|\bmounting\b|\bdismount\b/.test(d);
+  const hasRR = /\br\s*[&/]\s*r\b/.test(d) || /\brr\b/.test(d) || /remove[^a-z]{0,20}replace/.test(d);
+  const hasReplace = /\breplace\b|\binstall\b|\bnew\s+tires?\b/.test(d);
+  if (!hasMount && !hasRR && !hasReplace) return false;
+
+  return true;
+}
+
+function detectTireCount(desc) {
+  const d = desc.toLowerCase();
+  // Numeric: "mount and balance 4 tires", "R&R 2 tires", "tire(s) 4"
+  let m = d.match(/(\d+)\s*\b(?:tires?|wheels?)\b/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (n >= 1 && n <= 4) return n;
+  }
+  // After tire keyword: "tires (4)", "tire x4", "tires - 4"
+  m = d.match(/\btires?\b[^a-z0-9]{0,5}(\d)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (n >= 1 && n <= 4) return n;
+  }
+  // Word form: "one tire", "four tires"
+  const words = { one: 1, two: 2, three: 3, four: 4, single: 1 };
+  for (const [w, n] of Object.entries(words)) {
+    if (new RegExp(`\\b${w}\\s+tires?\\b`).test(d)) return n;
+  }
+  // "all four" or "set of four"
+  if (/\b(?:all|set\s+of)\s+four\b/.test(d)) return 4;
+  // Fallback: trailing isolated single digit 1-4 at end of string (e.g. "TIRE MOUNT - 2")
+  m = d.match(/[\s\-]([1-4])\s*$/);
+  if (m) return parseInt(m[1], 10);
+  return null;
+}
+
+function applyDisambiguation(opCode, descCounts, topMatch, candidates) {
+  if (!topMatch) return { category: null, note: null };
+  const desc = dominantDescription(descCounts); // only the dominant description
+  let category = topMatch.category;
+  let note = null;
+
+  // Rule 0: Service Package indicators WIN regardless of what the KB top match says.
+  // Only fires if the dominant description is a package bundle.
+  if (PACKAGE_INDICATORS.some(p => p.test(desc))) {
+    category = 'Service Packages';
+    note = 'Description contains service package language (scheduled maintenance / mile service / package).';
+    return { category, note };
+  }
+
+  // Rule 1: Tire operations — mount/R&R/install with a tire count (1-4).
+  // Fires BEFORE KB category takes effect, because numbers are stripped in normalization
+  // so the KB similarity can't distinguish 1-tire vs 4-tire operations.
+  if (isTireOperation(desc)) {
+    const n = detectTireCount(desc);
+    if (n !== null) {
+      category = `${n} Tire`;
+      note = `Tire mount / R&R operation (${n} tire${n > 1 ? 's' : ''}).`;
+    } else {
+      category = '1 Tire';
+      note = 'Tire mount / R&R operation — count unclear in description, defaulted to 1 Tire.';
+    }
+    return { category, note };
+  }
+
+  // Guard: if KB top suggests a Tire category but the dominant description isn't actually
+  // a tire mount/R&R operation (e.g. it's a pure balance), fall back to the next non-tire
+  // candidate. This prevents balance-only descriptions from landing in tire categories
+  // due to shared "tire" / "balance" tokens.
+  if (/^\d Tire$/.test(category)) {
+    const alt = candidates.find(c => !/^\d Tire$/.test(c.category));
+    if (alt) {
+      category = alt.category;
+      note = 'Tire category suggested by KB but description is not a mount/R&R operation; routed to next candidate.';
+    } else {
+      category = null;
+      note = 'KB matched a Tire category but description lacks mount/R&R verbs; left unclassified.';
+    }
+  }
+
+  // Rule 2: "front or rear differential" → default to Rear Differential (Blake's call)
+  if (/front\s+(?:or|and|\/)\s+rear\s+differential/.test(desc)
+      || /rear\s+(?:or|and|\/)\s+front\s+differential/.test(desc)) {
+    category = 'Rear Differential';
+    note = 'Unified front/rear differential code — defaulted to Rear Differential.';
+    return { category, note };
+  }
+
+  // Rule 3: bundled filter descriptions → Service Package
+  // Must match within the SAME dominant description (engine filter AND cabin filter together).
+  const hasEngine = /engine\s+(?:air\s+)?filter/.test(desc) || /engine\s+and\s+cabin/.test(desc);
+  const hasCabin = /cabin\s+(?:air\s+)?filter/.test(desc) || /engine\s+and\s+cabin/.test(desc);
+  if (hasEngine && hasCabin) {
+    category = 'Service Packages';
+    note = 'Bundled engine + cabin filter — classified as Service Package.';
+    return { category, note };
+  }
+
+  // Rule 4: Injector/induction disambiguation — force Fuel Induction when dominant desc
+  // clearly mentions injector/injection/induction in a fuel-flush context.
+  const hasInjector = /injector|injection|induction/.test(desc);
+  if (hasInjector && (desc.includes('fuel') || /\b(?:gdi|port)\b/.test(desc) || desc.includes('flush'))) {
+    const fuelCand = candidates.find(c => c.category === 'Fuel Induction/Injector Service');
+    if (fuelCand) {
+      category = 'Fuel Induction/Injector Service';
+      note = null;
+    }
+  }
+
+  // Rule 5: front/rear differential specificity
+  if (desc.includes('front differential') && !desc.includes('rear differential')) {
+    if (candidates.find(c => c.category === 'Front Differential')) category = 'Front Differential';
+  }
+  if (desc.includes('rear differential') && !desc.includes('front differential')) {
+    if (candidates.find(c => c.category === 'Rear Differential')) category = 'Rear Differential';
+  }
+
+  return { category, note };
+}
+
+/* ============================================================
+   KB MATCHING — core classification
+   ============================================================ */
+
+function matchAgainstKB(aggregated, kb) {
+  const { opCode, descCounts } = aggregated;
+  // Score every KB entry
+  const scored = kb.map(entry => {
+    const descSim = bestDescSim(descCounts, entry.description);
+    const opSim = opSimilarity(opCode, entry.opCode);
+    // Blake's rule: description dominates, op code is supporting
+    const combined = 0.80 * descSim + 0.20 * opSim;
+    return { ...entry, descSim, opSim, combined };
+  }).filter(m => m.combined > 0.10).sort((a, b) => b.combined - a.combined);
+
+  // Vote on category using top-k weighted by combined score
+  const K = 8;
+  const topK = scored.slice(0, K);
+  const votes = {};
+  for (const m of topK) {
+    votes[m.category] = (votes[m.category] || 0) + m.combined;
+  }
+  const ranked = Object.entries(votes).map(([cat, score]) => ({ category: cat, score })).sort((a, b) => b.score - a.score);
+
+  return {
+    topMatches: scored.slice(0, 5),
+    candidates: ranked,
+    topScore: scored[0]?.combined || 0,
+    top: scored[0] || null,
+  };
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
+
+function computeStats(values) {
+  const clean = values.filter(v => v != null && !isNaN(v) && v > 0).map(Number);
+  if (clean.length === 0) return null;
+  const n = clean.length;
+  const mean = clean.reduce((a, b) => a + b, 0) / n;
+  const sorted = [...clean].sort((a, b) => a - b);
+  const median = n % 2 ? sorted[Math.floor(n/2)] : (sorted[n/2-1] + sorted[n/2]) / 2;
+  const variance = clean.reduce((acc, v) => acc + (v - mean) ** 2, 0) / n;
+  const stddev = Math.sqrt(variance);
+  const cv = mean > 0 ? stddev / mean : null;
+  return { n, mean, median, stddev, cv };
+}
+
+/* ============================================================
+   MAIN CLASSIFICATION
+   ============================================================ */
+
+function classifyOpCode(agg, kb) {
+  const { opCode, descCounts, rowCount, laborValues, hoursValues } = agg;
+
+  // 1. Exclusion pass
+  const excl = checkExclusion(opCode, descCounts, rowCount);
+  if (excl.excluded) {
+    return {
+      ...agg,
+      category: null,
+      confidence: 'EXCLUDED',
+      decision: 'EXCLUDE',
+      reason: excl.reason,
+      repetition: 0,
+      matchScore: 0,
+      topMatches: [],
+      note: null,
+    };
+  }
+
+  // 2. Repetition signal
+  const rep = repetitionScore(descCounts, rowCount);
+
+  // 3. Stats
+  const laborStats = computeStats(laborValues);
+  const hoursStats = computeStats(hoursValues);
+
+  // 4. KB match
+  const kbMatch = matchAgainstKB(agg, kb);
+  const { topMatches, candidates, topScore, top } = kbMatch;
+
+  if (!top) {
+    return {
+      ...agg,
+      category: null,
+      confidence: 'NONE',
+      decision: 'REVIEW',
+      reason: `No similar service descriptions in the knowledge base. Top description: "${rep.topNormalized || '—'}".`,
+      repetition: rep.score,
+      matchScore: 0,
+      topMatches: [],
+      laborStats,
+      hoursStats,
+      note: null,
+    };
+  }
+
+  // 5. Disambiguation overrides
+  const disambig = applyDisambiguation(opCode, descCounts, top, candidates);
+  let finalCategory = disambig.category;
+
+  // If disambiguation moved category, find the best match for the overridden category
+  let topForFinalCat = top;
+  if (finalCategory !== top.category) {
+    topForFinalCat = topMatches.find(m => m.category === finalCategory) || top;
+  }
+
+  // 6. Conflict detection — do runner-up candidates have similar score?
+  const conflict = candidates.length >= 2 && candidates[1].score > candidates[0].score * 0.8
+                   && candidates[0].category !== candidates[1].category;
+
+  // 7. Decision logic — description-first, repetition-gated
+  let decision = 'REVIEW';
+  let confidence = 'LOW';
+  let reason = '';
+
+  const veryStrongDesc = topScore >= 0.80;
+  const strongDesc = topScore >= 0.65;
+  const modDesc = topScore >= 0.40;
+  const cleanRep = rep.score >= 0.85;
+  const okRep = rep.score >= 0.60;
+  const fairRep = rep.score >= 0.45;
+  const scatteredRep = rep.score < 0.40;
+
+  // Tire ops have naturally scattered descriptions (size, position, brand vary each row)
+  // but the op code is still a defined service. If tire op + count was detected and volume
+  // is reasonable, don't let scatter kick it to review.
+  const isConfirmedTireOp = /^\d Tire$/.test(finalCategory) && disambig.note && /\d tire/.test(disambig.note);
+
+  if (scatteredRep && !isConfirmedTireOp) {
+    decision = 'REVIEW';
+    confidence = 'LOW';
+    reason = `Scattered descriptions (${Math.round(rep.score*100)}% top repetition across ${rep.uniqueNormalized} variants) — looks like a diagnostic or complaint code, not a defined service. ${rowCount >= 10 ? 'High volume makes this unlikely to be a service.' : ''}`;
+  } else if (rowCount < 2) {
+    decision = 'REVIEW';
+    confidence = 'LOW';
+    reason = `Only ${rowCount} row — too little evidence to auto-classify. Confirm manually.`;
+  } else if (rowCount < 5) {
+    // Low volume, but if match is strong AND rep is perfect, still auto-classify MEDIUM.
+    // Also auto-classify when match is very strong (80%+) even if rep isn't perfect —
+    // a 90% description match on 3 rows is compelling enough to trust.
+    if ((strongDesc && cleanRep) || veryStrongDesc) {
+      decision = 'AUTO';
+      confidence = 'MEDIUM';
+      reason = `Low volume (${rowCount} rows) but ${veryStrongDesc ? 'very strong' : 'clean repeated'} description match for ${finalCategory} (${Math.round(topScore*100)}% similarity).`;
+    } else {
+      decision = 'REVIEW';
+      confidence = strongDesc ? 'MEDIUM' : 'LOW';
+      reason = `Too few rows (${rowCount}) to auto-classify${strongDesc ? `. Description strongly matches ${finalCategory}.` : '.'} Confirm manually.`;
+    }
+  } else if (isConfirmedTireOp && rowCount >= 5) {
+    // Confirmed tire op (count detected) — trust it even with varied descriptions
+    decision = 'AUTO';
+    confidence = cleanRep ? 'HIGH' : (okRep ? 'MEDIUM' : 'MEDIUM');
+    reason = `Tire operation (${finalCategory}) with ${rowCount} rows. Descriptions vary (tire size/brand/position) but mount/R&R verb and count are consistent.`;
+  } else if (strongDesc && cleanRep && !conflict) {
+    decision = 'AUTO';
+    confidence = 'HIGH';
+    reason = `Clean repeated description (${Math.round(rep.score*100)}% of rows) strongly matches ${finalCategory} (${Math.round(topScore*100)}% similarity to "${top.description}"${top.dealer ? ` at ${top.dealer}` : ''}).`;
+  } else if (strongDesc && okRep && !conflict) {
+    decision = 'AUTO';
+    confidence = 'MEDIUM';
+    reason = `Description matches ${finalCategory} (${Math.round(topScore*100)}% similarity). Repetition is good (${Math.round(rep.score*100)}%) but not unanimous.`;
+  } else if (veryStrongDesc && fairRep && !conflict) {
+    // Very strong match — even with only moderate repetition, classify at MEDIUM
+    decision = 'AUTO';
+    confidence = 'MEDIUM';
+    reason = `Strong description match for ${finalCategory} (${Math.round(topScore*100)}% similarity). Repetition only ${Math.round(rep.score*100)}% but match strength is high enough to trust.`;
+  } else if (modDesc && cleanRep && !conflict) {
+    decision = 'AUTO';
+    confidence = 'MEDIUM';
+    reason = `Repeated description (${Math.round(rep.score*100)}%) partially matches ${finalCategory} (${Math.round(topScore*100)}% similarity). Review recommended if category matters.`;
+  } else if (conflict) {
+    decision = 'REVIEW';
+    confidence = 'LOW';
+    reason = `Description matches multiple categories similarly — top: ${candidates[0].category}, runner-up: ${candidates[1].category}. Human review needed.`;
+  } else if (modDesc && okRep) {
+    decision = 'REVIEW';
+    confidence = 'MEDIUM';
+    reason = `Possible ${finalCategory} (${Math.round(topScore*100)}% description similarity, ${Math.round(rep.score*100)}% repetition) — not strong enough to auto-classify.`;
+  } else if (topScore < 0.40) {
+    decision = 'REVIEW';
+    confidence = 'LOW';
+    reason = `Weak description match for ${finalCategory} (${Math.round(topScore*100)}% similarity). Manual review needed.`;
+  } else {
+    decision = 'REVIEW';
+    confidence = 'LOW';
+    reason = `Partial description match for ${finalCategory} (${Math.round(topScore*100)}% similarity). Manual review needed.`;
+  }
+
+  if (disambig.note) reason += ' ' + disambig.note;
+
+  return {
+    ...agg,
+    category: finalCategory,
+    confidence,
+    decision,
+    reason,
+    repetition: rep.score,
+    topNormalizedDesc: rep.topNormalized,
+    uniqueDescs: rep.uniqueNormalized,
+    matchScore: topScore,
+    topMatches,
+    candidates,
+    laborStats,
+    hoursStats,
+    note: disambig.note,
+  };
+}
+
+/* ============================================================
+   AGGREGATION
+   ============================================================ */
+
+function normalizeOpCode(code) { return code == null ? '' : String(code).trim().toUpperCase(); }
+function normalizeDesc(desc) { return desc == null ? '' : String(desc).trim().replace(/\s+/g, ' '); }
+
+function aggregateByOpCode(rows, cols) {
+  const map = new Map();
+  for (const row of rows) {
+    const code = normalizeOpCode(row[cols.opCode]);
+    if (!code) continue;
+    const desc = normalizeDesc(row[cols.description]);
+    if (!map.has(code)) {
+      map.set(code, {
+        opCode: code,
+        descCounts: {},
+        correctionCounts: {},
+        laborValues: [],
+        hoursValues: [],
+        rowCount: 0,
+      });
+    }
+    const agg = map.get(code);
+    agg.rowCount++;
+    if (desc) agg.descCounts[desc] = (agg.descCounts[desc] || 0) + 1;
+    if (cols.correction && row[cols.correction]) {
+      const c = normalizeDesc(row[cols.correction]);
+      if (c && c.length >= 5) agg.correctionCounts[c] = (agg.correctionCounts[c] || 0) + 1;
+    }
+    if (cols.laborSale && row[cols.laborSale] != null) {
+      const v = parseFloat(String(row[cols.laborSale]).replace(/[^\d.\-]/g, ''));
+      if (!isNaN(v)) agg.laborValues.push(v);
+    }
+    if (cols.techHours && row[cols.techHours] != null) {
+      const v = parseFloat(String(row[cols.techHours]).replace(/[^\d.\-]/g, ''));
+      if (!isNaN(v)) agg.hoursValues.push(v);
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => b.rowCount - a.rowCount);
+}
+
+/* ============================================================
+   COLUMN DETECTION
+   ============================================================ */
+
+const COLUMN_ALIASES = {
+  opCode: ['op code', 'opcode', 'op_code', 'operation code', 'opcodes', 'op-code', 'operation_code', 'service code'],
+  description: ['operations description', 'operation description', 'op description', 'description', 'op desc', 'operations desc', 'service description'],
+  correction: ['correction', 'tech correction', 'technician correction', 'corrections'],
+  laborSale: ['labor sale', 'labor amount', 'labor total', 'total labor', 'labor $', 'labor_sale', 'labor sales', 'e labor sale', 'customer labor'],
+  techHours: ['tech hours', 'technician hours', 'actual hours', 'tech_hours', 'hours', 'labor hours', 'actual tech hours'],
+};
+
+function detectColumns(headers) {
+  const lowered = headers.map(h => String(h).trim().toLowerCase());
+  const detected = {};
+  for (const [field, aliases] of Object.entries(COLUMN_ALIASES)) {
+    for (const alias of aliases) {
+      const idx = lowered.indexOf(alias);
+      if (idx >= 0) { detected[field] = headers[idx]; break; }
+    }
+    if (!detected[field]) {
+      const key = aliases[0].split(' ')[0];
+      const idx = lowered.findIndex(h => h.includes(key));
+      if (idx >= 0) detected[field] = headers[idx];
+    }
+  }
+  return detected;
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
+function formatCV(cv) { return cv == null ? '—' : `${(cv * 100).toFixed(0)}%`; }
+function cvClass(cv) {
+  if (cv == null) return '';
+  if (cv < 0.15) return 'cv-good';
+  if (cv < 0.35) return 'cv-ok';
+  return 'cv-bad';
+}
+function formatUsd(v) { return v == null ? '—' : '$' + v.toFixed(2); }
+function formatHours(v) { return v == null ? '—' : v.toFixed(2) + ' hr'; }
+function pct(v) { return Math.round(v * 100) + '%'; }
+function barClass(v) { return v >= 0.7 ? 'high' : v >= 0.4 ? 'med' : 'low'; }
+
+/* ============================================================
+   UI COMPONENTS
+   ============================================================ */
+
+function Header({ dealerName }) {
+  return (
+    <div className="header">
+      <div>
+        <div className="brand-mark">EZ WINS · OP CODE INTELLIGENCE</div>
+        <h1>Service OP Code <em>Classifier</em></h1>
+      </div>
+      <div className="meta">
+        {dealerName && <div style={{ marginBottom: 4 }}>{dealerName.toUpperCase()}</div>}
+        <div>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+      </div>
+    </div>
+  );
+}
+
+function UploadPanel({ onFile }) {
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef();
+  return (
+    <div
+      className={'upload' + (dragging ? ' drag' : '')}
+      onClick={() => inputRef.current?.click()}
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]); }}
+    >
+      <h2>Upload dealer data</h2>
+      <p>Drop a repair-order-level CSV containing op code, operation description, and (optionally) correction, labor sale, and tech hours.</p>
+      <button className="btn primary">Select file</button>
+      <input ref={inputRef} type="file" accept=".csv,.tsv,.txt" style={{ display: 'none' }}
+        onChange={(e) => e.target.files[0] && onFile(e.target.files[0])} />
+      <div className="hint">The classifier is description-first: op code is a tiebreaker, the repeated description does the work.</div>
+    </div>
+  );
+}
+
+function ColumnMapper({ headers, detected, onConfirm, onCancel }) {
+  const [cols, setCols] = useState(detected);
+  const update = (k, v) => setCols(prev => ({ ...prev, [k]: v }));
+  const canSubmit = cols.opCode && cols.description;
+  return (
+    <div className="mapper">
+      <h3>Map columns</h3>
+      <p className="sub">Description is the primary signal, so make sure Operations Description is mapped. Labor Sale and Tech Hours add confidence.</p>
+      {[
+        { k: 'opCode', label: 'OP Code', req: true },
+        { k: 'description', label: 'Operations Description', req: true },
+        { k: 'correction', label: 'Correction', opt: true },
+        { k: 'laborSale', label: 'Labor Sale', opt: true },
+        { k: 'techHours', label: 'Tech Hours', opt: true },
+      ].map(f => (
+        <div className="field" key={f.k}>
+          <label>
+            {f.label}
+            {f.req && <span className="req">*</span>}
+            {f.opt && <span className="opt">Optional</span>}
+          </label>
+          <select value={cols[f.k] || ''} onChange={(e) => update(f.k, e.target.value)}>
+            <option value="">— not mapped —</option>
+            {headers.map(h => <option key={h} value={h}>{h}</option>)}
+          </select>
+        </div>
+      ))}
+      <div className="actions">
+        <button className="btn" onClick={onCancel}>Back</button>
+        <button className="btn primary" onClick={() => onConfirm(cols)} disabled={!canSubmit}>
+          Run classifier →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ConfidencePill({ confidence }) {
+  const map = { HIGH: 'conf-high', MEDIUM: 'conf-med', LOW: 'conf-low', NONE: 'conf-none', EXCLUDED: 'conf-none' };
+  return <span className={`pill ${map[confidence] || 'conf-none'} xs`}>{confidence}</span>;
+}
+
+function SignalCell({ rep, match }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="signal-bar">
+        <div className="track"><div className={'fill ' + barClass(rep)} style={{ width: (rep * 100) + '%' }}></div></div>
+        <div className="labels"><span>REP</span><span>{pct(rep)}</span></div>
+      </div>
+      <div className="signal-bar">
+        <div className="track"><div className={'fill ' + barClass(match)} style={{ width: (match * 100) + '%' }}></div></div>
+        <div className="labels"><span>MATCH</span><span>{pct(match)}</span></div>
+      </div>
+    </div>
+  );
+}
+
+function OpCodeDetail({ result, onOverride }) {
+  const topDescs = Object.entries(result.descCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const topCorrs = Object.entries(result.correctionCounts || {}).sort((a, b) => b[1] - a[1]).slice(0, 2);
+  return (
+    <div className="opcode-detail">
+      <div className="grid">
+        <div>
+          <h4>Descriptions observed</h4>
+          <div className="desc-list">
+            {topDescs.map(([d, n]) => (
+              <div className="desc-item" key={d}>
+                <div className="text">{d}</div>
+                <div className="count">{n}×</div>
+              </div>
+            ))}
+            {topCorrs.map(([c, n]) => (
+              <div className="desc-item correction" key={c}>
+                <div className="text">↳ correction: {c}</div>
+                <div className="count">{n}×</div>
+              </div>
+            ))}
+          </div>
+
+          {result.topMatches && result.topMatches.length > 0 && (
+            <>
+              <h4 style={{ marginTop: 20 }}>Most similar in knowledge base</h4>
+              <div className="kb-matches">
+                {result.topMatches.slice(0, 4).map((m, i) => (
+                  <div className="kb-match" key={i}>
+                    <div className="score">{Math.round(m.combined * 100)}%</div>
+                    <div className="desc-cell">
+                      <span className="op">{m.opCode}</span>
+                      <span className="dsc">"{m.description}"</span>
+                      <div className="src">→ {m.category}{m.dealer ? ` · learned from ${m.dealer}` : m.source === 'seed' ? ' · seed KB' : ''}</div>
+                    </div>
+                    <div><span className="pill cat xs">{m.category}</span></div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div className="override-row">
+            <label>Assign category</label>
+            <select value={result.category || ''} onChange={(e) => onOverride(result.opCode, e.target.value || null)}>
+              <option value="">(Unclassified)</option>
+              {CATEGORY_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="__EXCLUDE__">Exclude</option>
+            </select>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', fontFamily: 'var(--mono)' }}>
+              Changes add to the KB for future dealers.
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <div className="stats-row">
+            <div className="mini-stat">
+              <div className="label">Labor sale</div>
+              <div className="value">
+                {result.laborStats ? formatUsd(result.laborStats.mean) : '—'}
+                {result.laborStats && <span className={'cv ' + cvClass(result.laborStats.cv)}>±{formatCV(result.laborStats.cv)}</span>}
+              </div>
+            </div>
+            <div className="mini-stat">
+              <div className="label">Tech hours</div>
+              <div className="value">
+                {result.hoursStats ? formatHours(result.hoursStats.mean) : '—'}
+                {result.hoursStats && <span className={'cv ' + cvClass(result.hoursStats.cv)}>±{formatCV(result.hoursStats.cv)}</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="stats-row">
+            <div className="mini-stat">
+              <div className="label">Repetition</div>
+              <div className="value">{pct(result.repetition || 0)}</div>
+            </div>
+            <div className="mini-stat">
+              <div className="label">KB match</div>
+              <div className="value">{pct(result.matchScore || 0)}</div>
+            </div>
+          </div>
+
+          <div className="reason-box">
+            <span className="label">Reasoning</span>
+            {result.reason}
+          </div>
+
+          {result.candidates && result.candidates.length > 1 && (
+            <div style={{ marginTop: 10, fontSize: 11.5, color: 'var(--text-3)', fontFamily: 'var(--mono)' }}>
+              {result.candidates.slice(1, 3).map((c, i) =>
+                <div key={i}>alt: {c.category} ({c.score.toFixed(2)})</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OpCodeList({ results, onOverride, emptyMsg, showProgress }) {
+  const [openCode, setOpenCode] = useState(null);
+  if (!results.length) return <div className="empty"><h3>{emptyMsg || 'Nothing here.'}</h3></div>;
+
+  // Progress counter for review queue: how many have been user-mapped
+  const handled = results.filter(r => r.userMapped).length;
+  const pctDone = results.length > 0 ? Math.round(handled / results.length * 100) : 0;
+
+  return (
+    <>
+      {showProgress && (
+        <div className="review-progress">
+          <span className="count"><strong>{handled}</strong> of {results.length} handled</span>
+          <div className="bar-track"><div className="bar-fill" style={{ width: pctDone + '%' }}></div></div>
+          <span className="count">{pctDone}%</span>
+        </div>
+      )}
+      <div className="opcode-list">
+        <div className="opcode-header-row">
+          <span>OP Code</span>
+          <span>Top description</span>
+          <span>Category</span>
+          <span style={{ textAlign: 'right' }}>Rows</span>
+          <span>Conf.</span>
+          <span>Signals</span>
+        </div>
+        {results.map(r => {
+          const topDesc = Object.entries(r.descCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+          const open = openCode === r.opCode;
+          const handled = r.userMapped;
+          return (
+            <React.Fragment key={r.opCode}>
+              <div className={'opcode-row' + (open ? ' open' : '') + (handled ? ' row-handled' : '')} onClick={() => setOpenCode(open ? null : r.opCode)}>
+                <div className="opcode-cell-code">
+                  <span className="chevron">▶</span>&nbsp; {r.opCode}
+                </div>
+                <div className="opcode-cell-desc">{topDesc}</div>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {r.category
+                    ? <span className="pill cat xs">{r.category}</span>
+                    : <span className="pill conf-none xs">{r.confidence === 'EXCLUDED' ? 'EXCLUDED' : 'UNCLASSIFIED'}</span>}
+                  {handled && <span className="pill handled xs">Mapped</span>}
+                </div>
+                <div className="opcode-cell-rows">{r.rowCount.toLocaleString()}</div>
+                <div><ConfidencePill confidence={r.confidence} /></div>
+                <div><SignalCell rep={r.repetition || 0} match={r.matchScore || 0} /></div>
+              </div>
+              {open && <OpCodeDetail result={r} onOverride={onOverride} />}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/* ============================================================
+   EXPORTS
+   ============================================================ */
+
+function downloadText(filename, text, type = 'text/csv') {
+  // Data URL approach: more compatible with sandboxed iframes than blob URLs.
+  // Data URLs are embedded inline so there's no blob-revocation timing issue.
+  const dataUrl = `data:${type};charset=utf-8,${encodeURIComponent(text)}`;
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { document.body.removeChild(a); } catch (e) {}
+  }, 300);
+}
+
+function safeFilename(s, suffix) {
+  const base = (s || 'dealer').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase();
+  return `${base}_${suffix}`;
+}
+
+function toCsv(headers, rows) {
+  const escape = (v) => {
+    if (v == null) return '';
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  return [headers.join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+}
+
+function buildMappingCsv(results) {
+  const mapped = results.filter(r => r.decision === 'AUTO' && r.category);
+  const headers = ['OP Code', 'EZ Wins Service', 'Confidence', 'Rows', 'Repetition', 'Top Description', 'Avg Labor Sale', 'Avg Tech Hours'];
+  const rows = mapped.map(r => {
+    const topDesc = Object.entries(r.descCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+    return [r.opCode, r.category, r.confidence, r.rowCount, pct(r.repetition || 0), topDesc,
+      r.laborStats ? r.laborStats.mean.toFixed(2) : '',
+      r.hoursStats ? r.hoursStats.mean.toFixed(2) : ''];
+  });
+  return toCsv(headers, rows);
+}
+
+function buildReviewCsv(results) {
+  const review = results.filter(r => r.originalDecision === 'REVIEW');
+  const headers = ['OP Code', 'Proposed Category', 'Confidence', 'Rows', 'Repetition', 'Top Description', 'Reason', 'User Mapped', 'Avg Labor Sale', 'Avg Tech Hours'];
+  const rows = review.map(r => {
+    const topDesc = Object.entries(r.descCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+    return [r.opCode, r.category || '', r.confidence, r.rowCount, pct(r.repetition || 0), topDesc, r.reason,
+      r.userMapped ? 'yes' : '',
+      r.laborStats ? r.laborStats.mean.toFixed(2) : '',
+      r.hoursStats ? r.hoursStats.mean.toFixed(2) : ''];
+  });
+  return toCsv(headers, rows);
+}
+
+function buildKbJson(kb) {
+  return JSON.stringify(kb, null, 2);
+}
+
+function exportMappingCsv(results, dealer) {
+  downloadText(safeFilename(dealer, 'opcode_mapping.csv'), buildMappingCsv(results));
+}
+
+function exportReviewCsv(results, dealer) {
+  downloadText(safeFilename(dealer, 'opcode_review.csv'), buildReviewCsv(results));
+}
+
+function exportKb(kb) {
+  const date = new Date().toISOString().slice(0, 10);
+  downloadText(`ez_wins_opcode_kb_${date}.json`, buildKbJson(kb), 'application/json');
+}
+
+// Wrap any export fn so thrown errors surface as a visible toast instead of silently failing.
+// Also logs the full error to the console so we can debug further if needed.
+function safeExport(fn, label, showToast) {
+  try {
+    fn();
+    showToast(`${label} downloaded`);
+  } catch (err) {
+    console.error(`[${label}] export failed:`, err);
+    showToast(`${label} failed: ${err.message || 'unknown error'}`);
+  }
+}
+
+/* ============================================================
+   PREVIEW MODAL
+   Shows export content in a textarea so the user can always copy it
+   even if the browser's download mechanism is blocked by the iframe sandbox.
+   ============================================================ */
+
+function PreviewModal({ title, filename, content, contentType, onClose, showToast }) {
+  const textareaRef = useRef();
+
+  const copyToClipboard = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(content);
+        showToast('Copied to clipboard');
+      } else {
+        // Fallback: select the textarea and use execCommand
+        textareaRef.current?.select();
+        document.execCommand('copy');
+        showToast('Copied to clipboard');
+      }
+    } catch (err) {
+      // Last resort — select text for the user to Ctrl+C manually
+      textareaRef.current?.select();
+      showToast('Select all + Ctrl+C to copy');
+    }
+  };
+
+  const tryDownload = () => {
+    try {
+      downloadText(filename, content, contentType);
+      showToast('Download triggered — check your downloads folder');
+    } catch (err) {
+      showToast('Download failed — use Copy instead');
+    }
+  };
+
+  const openInNewTab = () => {
+    const dataUrl = `data:${contentType};charset=utf-8,${encodeURIComponent(content)}`;
+    window.open(dataUrl, '_blank');
+  };
+
+  const lineCount = (content.match(/\n/g) || []).length + 1;
+  const sizeKb = (new Blob([content]).size / 1024).toFixed(1);
+
+  return (
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal">
+        <div className="modal-header">
+          <div>
+            <h3>{title}</h3>
+            <div className="sub" style={{ marginTop: 4 }}>{filename} · {lineCount} lines · {sizeKb} KB</div>
+          </div>
+          <button className="btn ghost" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-hint">
+          Preview below. Copy to clipboard, download as file, or open in a new tab — whichever works for you.
+        </div>
+        <div className="modal-body">
+          <textarea ref={textareaRef} value={content} readOnly onClick={(e) => e.target.select()} />
+        </div>
+        <div className="modal-footer">
+          <button className="btn" onClick={openInNewTab}>Open in new tab</button>
+          <button className="btn" onClick={tryDownload}>Download file</button>
+          <button className="btn primary" onClick={copyToClipboard}>Copy to clipboard</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PDF EXPORT
+   ============================================================ */
+
+function generatePdf(results, dealer, kbStats) {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    throw new Error('PDF library failed to load. Check your internet connection and refresh.');
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  if (typeof doc.autoTable !== 'function') {
+    throw new Error('PDF table plugin failed to load. Refresh the page and try again.');
+  }
+  const PAGE_W = 612, PAGE_H = 792, MARGIN = 54;
+  const navy = [26, 43, 74], text = [11, 11, 13], text2 = [91, 94, 102], text3 = [140, 143, 150];
+  const border = [229, 226, 217], surface2 = [244, 243, 238];
+
+  // COVER
+  doc.setFillColor(...navy); doc.rect(0, 0, PAGE_W, 6, 'F');
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...text2);
+  doc.text('EZ WINS · OP CODE INTELLIGENCE', MARGIN, MARGIN);
+  doc.setFont('times', 'normal'); doc.setFontSize(44); doc.setTextColor(...text);
+  doc.text('Service OP Code', MARGIN, MARGIN + 80);
+  doc.setFont('times', 'italic'); doc.setTextColor(...navy);
+  doc.text('Classification Report', MARGIN, MARGIN + 126);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...text2);
+  const subText = 'A dealership service mapping of repair order op codes to the EZ Wins service taxonomy, built from operations descriptions and validated against a knowledge base of confirmed service patterns.';
+  doc.text(doc.splitTextToSize(subText, 400), MARGIN, MARGIN + 164);
+
+  const metaY = MARGIN + 240;
+  doc.setDrawColor(...border); doc.line(MARGIN, metaY, PAGE_W - MARGIN, metaY);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...text3);
+  doc.text('PREPARED FOR', MARGIN, metaY + 20);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...text);
+  doc.text((dealer || 'UNSPECIFIED DEALER').toUpperCase(), MARGIN, metaY + 38);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...text3);
+  doc.text('REPORT DATE', MARGIN + 220, metaY + 20);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...text);
+  doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), MARGIN + 220, metaY + 38);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...text3);
+  doc.text('TOTAL OP CODES', MARGIN + 400, metaY + 20);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...text);
+  doc.text(String(results.length), MARGIN + 400, metaY + 38);
+
+  const mapped = results.filter(r => r.decision === 'AUTO');
+  const review = results.filter(r => r.decision === 'REVIEW');
+  const excluded = results.filter(r => r.decision === 'EXCLUDE');
+  const totalRows = results.reduce((a, r) => a + r.rowCount, 0);
+  const mappedRows = mapped.reduce((a, r) => a + r.rowCount, 0);
+
+  const summaryY = metaY + 90;
+  doc.setFillColor(...surface2); doc.rect(MARGIN, summaryY, PAGE_W - 2 * MARGIN, 110, 'F');
+  const cardW = (PAGE_W - 2 * MARGIN) / 4;
+  [['Auto-mapped', mapped.length, 'op codes'],
+   ['Review queue', review.length, 'op codes'],
+   ['Excluded', excluded.length, 'op codes'],
+   ['Coverage', totalRows > 0 ? Math.round(mappedRows / totalRows * 100) + '%' : '—', 'of rows']
+  ].forEach((c, i) => {
+    const cx = MARGIN + i * cardW;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...text3);
+    doc.text(c[0].toUpperCase(), cx + 16, summaryY + 24);
+    doc.setFont('times', 'normal'); doc.setFontSize(32); doc.setTextColor(...text);
+    doc.text(String(c[1]), cx + 16, summaryY + 62);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...text3);
+    doc.text(c[2], cx + 16, summaryY + 80);
+  });
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...text3);
+  doc.text('CONFIDENTIAL · FOR DEALER REVIEW', MARGIN, PAGE_H - 36);
+  doc.text('EZ WINS · ez-wins.com', PAGE_W - MARGIN, PAGE_H - 36, { align: 'right' });
+
+  // METHODOLOGY
+  doc.addPage();
+  drawHeader(doc, 'Methodology', dealer, navy, text3, border, MARGIN, PAGE_W);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...text);
+  const method = [
+    'Each op code in the dealer’s repair order data was aggregated across all occurrences and classified using two primary signals:',
+    '',
+    '  · REPETITION — how consistently the same service description repeats across rows. A repeated description indicates a defined service; scattered descriptions indicate a diagnostic or complaint code.',
+    '  · DESCRIPTION MATCH — similarity of the repeated description to known service patterns in the EZ Wins knowledge base. Description is the primary signal because op codes vary wildly between dealers while descriptions converge on standard language.',
+    '',
+    'Op code similarity is used only as a tiebreaker. An op code with a clean, repeated description that matches a known service pattern will be classified even if its code has never been seen before.',
+    '',
+    'The knowledge base is seeded with confirmed service examples and grows with every dealer classified. Confirmed overrides from each dealer become searchable patterns for the next.',
+    '',
+    `At time of classification, the KB contained ${kbStats.total} entries (${kbStats.seed} seed + ${kbStats.learned} learned from prior dealers).`,
+    '',
+    'Confidence levels:',
+    '  · HIGH — Clean repeated description (>85%) with strong KB match (>65%).',
+    '  · MEDIUM — Good description match but either repetition or similarity is not unanimous.',
+    '  · LOW — Partial match, conflict, or scattered descriptions.',
+  ];
+  let yy = MARGIN + 80;
+  method.forEach(line => {
+    if (!line) { yy += 6; return; }
+    const wrapped = doc.splitTextToSize(line, PAGE_W - 2 * MARGIN);
+    doc.text(wrapped, MARGIN, yy);
+    yy += wrapped.length * 14;
+  });
+  drawFooter(doc, text3, MARGIN, PAGE_W, PAGE_H);
+
+  // PER-CATEGORY
+  const byCategory = {};
+  mapped.forEach(r => { (byCategory[r.category] = byCategory[r.category] || []).push(r); });
+  const orderedCats = CATEGORY_LIST.filter(c => byCategory[c]);
+  for (const cat of orderedCats) {
+    doc.addPage();
+    drawHeader(doc, 'Category · ' + cat, dealer, navy, text3, border, MARGIN, PAGE_W);
+    const rows = byCategory[cat].sort((a, b) => b.rowCount - a.rowCount);
+    const catRows = rows.reduce((a, r) => a + r.rowCount, 0);
+    doc.setFont('times', 'normal'); doc.setFontSize(24); doc.setTextColor(...text);
+    doc.text(cat, MARGIN, MARGIN + 90);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...text2);
+    doc.text(`${rows.length} op codes · ${catRows.toLocaleString()} total repair order lines`, MARGIN, MARGIN + 108);
+    doc.autoTable({
+      startY: MARGIN + 130,
+      head: [['OP Code', 'Primary Description', 'Rows', 'Rep.', 'Avg Labor', 'Conf.']],
+      body: rows.map(r => {
+        const topDesc = Object.entries(r.descCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+        return [r.opCode,
+          topDesc.length > 60 ? topDesc.slice(0, 57) + '…' : topDesc,
+          r.rowCount.toLocaleString(),
+          pct(r.repetition || 0),
+          r.laborStats ? '$' + r.laborStats.mean.toFixed(0) : '—',
+          r.confidence];
+      }),
+      styles: { font: 'helvetica', fontSize: 9, cellPadding: 6, textColor: text, lineColor: border, lineWidth: 0.5 },
+      headStyles: { fillColor: surface2, textColor: text2, fontStyle: 'normal', fontSize: 8, cellPadding: 6 },
+      columnStyles: { 0: { cellWidth: 80, fontStyle: 'bold' }, 1: { cellWidth: 230 }, 2: { cellWidth: 45, halign: 'right' }, 3: { cellWidth: 45, halign: 'right' }, 4: { cellWidth: 60, halign: 'right' }, 5: { cellWidth: 50 } },
+      margin: { left: MARGIN, right: MARGIN },
+    });
+    drawFooter(doc, text3, MARGIN, PAGE_W, PAGE_H);
+  }
+
+  // REVIEW QUEUE
+  if (review.length > 0) {
+    doc.addPage();
+    drawHeader(doc, 'Review queue', dealer, navy, text3, border, MARGIN, PAGE_W);
+    doc.setFont('times', 'normal'); doc.setFontSize(24); doc.setTextColor(...text);
+    doc.text('Op codes requiring dealer input', MARGIN, MARGIN + 90);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...text2);
+    doc.text(doc.splitTextToSize(
+      `${review.length} op codes could not be auto-classified. Reasons include scattered descriptions (likely complaint/diagnostic codes), insufficient volume, conflicting signals, or weak description match. Please confirm or correct.`,
+      PAGE_W - 2 * MARGIN
+    ), MARGIN, MARGIN + 108);
+    doc.autoTable({
+      startY: MARGIN + 150,
+      head: [['OP Code', 'Proposed', 'Rows', 'Rep.', 'Top Description', 'Reason']],
+      body: review.slice(0, 200).map(r => {
+        const topDesc = Object.entries(r.descCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+        return [r.opCode, r.category || '—', r.rowCount.toLocaleString(), pct(r.repetition || 0),
+          topDesc.length > 34 ? topDesc.slice(0, 31) + '…' : topDesc,
+          r.reason.length > 60 ? r.reason.slice(0, 57) + '…' : r.reason];
+      }),
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 5, textColor: text, lineColor: border, lineWidth: 0.5 },
+      headStyles: { fillColor: surface2, textColor: text2, fontStyle: 'normal', fontSize: 8, cellPadding: 6 },
+      columnStyles: { 0: { cellWidth: 70, fontStyle: 'bold' }, 1: { cellWidth: 90 }, 2: { cellWidth: 40, halign: 'right' }, 3: { cellWidth: 40, halign: 'right' }, 4: { cellWidth: 135 }, 5: { cellWidth: 'auto' } },
+      margin: { left: MARGIN, right: MARGIN },
+    });
+    drawFooter(doc, text3, MARGIN, PAGE_W, PAGE_H);
+  }
+
+  // page numbers
+  const pages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...text3);
+    doc.text(`${i} / ${pages}`, PAGE_W / 2, PAGE_H - 36, { align: 'center' });
+  }
+  // Open the PDF in a new tab — most reliable in sandboxed iframes. User can save
+  // from the browser's built-in PDF viewer. Also attempt a download in parallel.
+  try {
+    doc.output('dataurlnewwindow', { filename: safeFilename(dealer, 'opcode_classification.pdf') });
+  } catch (e) {
+    // Fallback: try direct download via data URI
+    const dataUri = doc.output('datauristring');
+    const a = document.createElement('a');
+    a.href = dataUri;
+    a.download = safeFilename(dealer, 'opcode_classification.pdf');
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { try { document.body.removeChild(a); } catch(e) {} }, 300);
+  }
+}
+
+function drawHeader(doc, title, dealer, navy, text3, border, MARGIN, PAGE_W) {
+  doc.setFillColor(...navy); doc.rect(MARGIN, MARGIN, 6, 6, 'F');
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...text3);
+  doc.text('EZ WINS · ' + title.toUpperCase(), MARGIN + 16, MARGIN + 5);
+  doc.text((dealer || '').toUpperCase(), PAGE_W - MARGIN, MARGIN + 5, { align: 'right' });
+  doc.setDrawColor(...border);
+  doc.line(MARGIN, MARGIN + 16, PAGE_W - MARGIN, MARGIN + 16);
+}
+function drawFooter(doc, text3, MARGIN, PAGE_W, PAGE_H) {
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...text3);
+  doc.text('CONFIDENTIAL · FOR DEALER REVIEW', MARGIN, PAGE_H - 36);
+  doc.text('ez-wins.com', PAGE_W - MARGIN, PAGE_H - 36, { align: 'right' });
+}
+
+/* ============================================================
+   MAIN APP
+   ============================================================ */
+
+function App() {
+  const [step, setStep] = useState('upload');
+  const [headers, setHeaders] = useState([]);
+  const [rows, setRows] = useState([]);
+  const [cols, setCols] = useState(null);
+  const [detectedCols, setDetectedCols] = useState({});
+  const [dealer, setDealer] = useState('');
+  const [results, setResults] = useState([]);
+  const [tab, setTab] = useState('mapped');
+  const [overrides, setOverrides] = useState({});
+  const [kb, setKb] = useState(SEED_KB);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [preview, setPreview] = useState(null); // { title, filename, content, contentType }
+  const kbImportRef = useRef();
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  };
+
+  const handleFile = (file) => {
+    setError(null);
+    const base = file.name.replace(/\.[a-z]+$/i, '').replace(/_raw_data_.*$/, '').replace(/[_\-]/g, ' ');
+    setDealer(base);
+    window.Papa.parse(file, {
+      header: true, skipEmptyLines: true, dynamicTyping: false,
+      complete: (result) => {
+        if (!result.data || !result.data.length) { setError('No data rows found in file.'); return; }
+        const hdrs = result.meta.fields || [];
+        setHeaders(hdrs); setRows(result.data);
+        setDetectedCols(detectColumns(hdrs));
+        setStep('map');
+      },
+      error: (err) => setError('Parse error: ' + err.message),
+    });
+  };
+
+  const runClassifier = (mappedCols) => {
+    setCols(mappedCols);
+    const aggregated = aggregateByOpCode(rows, mappedCols);
+    const classified = aggregated.map(a => {
+      const r = classifyOpCode(a, kb);
+      return { ...r, originalDecision: r.decision }; // snapshot original decision for stable buckets
+    });
+    setResults(classified);
+    setStep('results');
+  };
+
+  // When user overrides a category, we (a) remember the override and (b) add to KB
+  const applyOverride = (opCode, category) => {
+    setOverrides(prev => ({ ...prev, [opCode]: category }));
+    if (category && category !== '__EXCLUDE__') {
+      const result = results.find(r => r.opCode === opCode);
+      if (result) {
+        const topDesc = Object.entries(result.descCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+        if (topDesc) {
+          setKb(prev => [
+            ...prev.filter(e => !(e.opCode === opCode && e.dealer === dealer)),
+            { opCode, description: topDesc, category, source: 'override', dealer }
+          ]);
+          showToast(`Added ${opCode} → ${category} to KB`);
+          return;
+        }
+      }
+    }
+    if (category === '__EXCLUDE__') showToast(`${opCode} marked excluded`);
+    else if (category === null) showToast(`${opCode} unclassified`);
+  };
+
+  const finalResults = useMemo(() => results.map(r => {
+    if (!(r.opCode in overrides)) return r;
+    const ov = overrides[r.opCode];
+    if (ov === '__EXCLUDE__') return { ...r, category: null, decision: 'EXCLUDE', confidence: 'EXCLUDED', reason: 'Manual override: excluded.', userMapped: true };
+    if (ov === null) return { ...r, category: null, decision: 'REVIEW', confidence: 'LOW', reason: 'Manual override: unclassified.', userMapped: true };
+    return { ...r, category: ov, decision: 'AUTO', confidence: 'HIGH', reason: `Manual override: assigned to ${ov}. Added to KB for future dealers.`, userMapped: true };
+  }), [results, overrides]);
+
+  const buckets = useMemo(() => ({
+    // Mapped tab reflects CURRENT state (includes auto-mapped + user overrides)
+    mapped: finalResults.filter(r => r.decision === 'AUTO'),
+    // Review tab stays stable — items don't disappear when you map them, so you can
+    // see your progress through the queue.
+    review: finalResults.filter(r => r.originalDecision === 'REVIEW'),
+    // Excluded tab: items originally excluded, even if user later overrides to a category
+    excluded: finalResults.filter(r => r.originalDecision === 'EXCLUDE'),
+    all: finalResults,
+  }), [finalResults]);
+
+  const stats = useMemo(() => {
+    const totalRows = finalResults.reduce((a, r) => a + r.rowCount, 0);
+    const mappedRows = buckets.mapped.reduce((a, r) => a + r.rowCount, 0);
+    const reviewHandled = buckets.review.filter(r => r.userMapped).length;
+    return {
+      totalCodes: finalResults.length,
+      mappedCodes: buckets.mapped.length,
+      reviewCodes: buckets.review.length,
+      reviewHandled,
+      excludedCodes: buckets.excluded.length,
+      coveragePct: totalRows > 0 ? Math.round(mappedRows / totalRows * 100) : 0,
+    };
+  }, [finalResults, buckets]);
+
+  const kbStats = useMemo(() => ({
+    total: kb.length,
+    seed: kb.filter(e => e.source === 'seed').length,
+    learned: kb.filter(e => e.source !== 'seed').length,
+  }), [kb]);
+
+  const importKb = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data)) throw new Error('Not an array');
+        const valid = data.filter(d => d.opCode && d.description && d.category);
+        setKb(valid);
+        showToast(`Loaded ${valid.length} KB entries`);
+        // re-run classification if we already have results
+        if (results.length > 0 && cols) {
+          const aggregated = aggregateByOpCode(rows, cols);
+          setResults(aggregated.map(a => classifyOpCode(a, valid)));
+        }
+      } catch (err) {
+        setError('Invalid KB file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const reset = () => {
+    setStep('upload'); setRows([]); setHeaders([]); setCols(null);
+    setResults([]); setOverrides({}); setError(null);
+  };
+
+  return (
+    <div className="app">
+      <Header dealerName={dealer} />
+
+      {error && (
+        <div style={{ padding: 14, background: 'var(--danger-soft)', color: 'var(--danger)', marginBottom: 20, fontSize: 13, borderRadius: 2 }}>
+          {error}
+        </div>
+      )}
+
+      {step === 'upload' && (
+        <>
+          <UploadPanel onFile={handleFile} />
+          <div className="toolbar" style={{ marginTop: 20 }}>
+            <span className="label">Knowledge Base</span>
+            <span className="kb-badge"><strong>{kbStats.total}</strong> entries · {kbStats.seed} seed · {kbStats.learned} learned</span>
+            <button className="btn sm" onClick={() => kbImportRef.current?.click()}>Import KB</button>
+            <input ref={kbImportRef} type="file" accept=".json" style={{ display: 'none' }}
+              onChange={(e) => e.target.files[0] && importKb(e.target.files[0])} />
+            <button className="btn sm" onClick={() => setPreview({
+              title: 'Knowledge Base JSON',
+              filename: `ez_wins_opcode_kb_${new Date().toISOString().slice(0, 10)}.json`,
+              content: buildKbJson(kb),
+              contentType: 'application/json',
+            })}>Export KB</button>
+          </div>
+        </>
+      )}
+
+      {step === 'map' && (
+        <>
+          <div className="dealer-field">
+            <label>Dealer name</label>
+            <input value={dealer} onChange={(e) => setDealer(e.target.value)} placeholder="e.g. DeMontrond GMC Buick" />
+          </div>
+          <ColumnMapper headers={headers} detected={detectedCols} onConfirm={runClassifier} onCancel={reset} />
+        </>
+      )}
+
+      {step === 'results' && (
+        <>
+          <div className="results-header">
+            <div>
+              <h2>Classification complete</h2>
+              <div className="sub">{rows.length.toLocaleString()} rows · {results.length} unique op codes · classified against {kbStats.total} KB entries</div>
+            </div>
+            <div><button className="btn ghost" onClick={reset}>← Start over</button></div>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat"><div className="label">Auto-mapped</div><div className="value">{stats.mappedCodes}</div><div className="sub">op codes ready to set up</div></div>
+            <div className="stat"><div className="label">Review queue</div><div className="value">{stats.reviewCodes}</div><div className="sub">{stats.reviewHandled > 0 ? `${stats.reviewHandled} handled` : 'need human confirmation'}</div></div>
+            <div className="stat"><div className="label">Excluded</div><div className="value">{stats.excludedCodes}</div><div className="sub">oil, MPI, recall, wash, etc.</div></div>
+            <div className="stat"><div className="label">Coverage</div><div className="value">{stats.coveragePct}%</div><div className="sub">of total RO lines classified</div></div>
+          </div>
+
+          <div className="dealer-field">
+            <label>Dealer name</label>
+            <input value={dealer} onChange={(e) => setDealer(e.target.value)} placeholder="Dealer name for exports" />
+          </div>
+
+          <div className="toolbar">
+            <span className="label">Exports</span>
+            <span className="kb-badge">KB: <strong>{kbStats.total}</strong> entries</span>
+            <button className="btn sm" onClick={() => setPreview({
+              title: 'Mapping CSV',
+              filename: safeFilename(dealer, 'opcode_mapping.csv'),
+              content: buildMappingCsv(finalResults),
+              contentType: 'text/csv',
+            })}>Mapping CSV</button>
+            <button className="btn sm" onClick={() => setPreview({
+              title: 'Review CSV',
+              filename: safeFilename(dealer, 'opcode_review.csv'),
+              content: buildReviewCsv(finalResults),
+              contentType: 'text/csv',
+            })}>Review CSV</button>
+            <button className="btn sm" onClick={() => setPreview({
+              title: 'Knowledge Base JSON',
+              filename: `ez_wins_opcode_kb_${new Date().toISOString().slice(0, 10)}.json`,
+              content: buildKbJson(kb),
+              contentType: 'application/json',
+            })}>Export KB</button>
+            <button className="btn primary sm" onClick={() => safeExport(() => generatePdf(finalResults, dealer, kbStats), 'Client PDF', showToast)}>Client PDF</button>
+          </div>
+
+          <div className="tabs">
+            <button className={'tab' + (tab === 'mapped' ? ' active' : '')} onClick={() => setTab('mapped')}>Auto-mapped<span className="count">{buckets.mapped.length}</span></button>
+            <button className={'tab' + (tab === 'review' ? ' active' : '')} onClick={() => setTab('review')}>Review queue<span className="count">{buckets.review.length}</span></button>
+            <button className={'tab' + (tab === 'excluded' ? ' active' : '')} onClick={() => setTab('excluded')}>Excluded<span className="count">{buckets.excluded.length}</span></button>
+            <button className={'tab' + (tab === 'all' ? ' active' : '')} onClick={() => setTab('all')}>All<span className="count">{buckets.all.length}</span></button>
+          </div>
+
+          <OpCodeList
+            results={buckets[tab]}
+            onOverride={applyOverride}
+            emptyMsg={tab === 'mapped' ? 'No auto-mapped op codes yet.' : tab === 'review' ? 'Nothing to review.' : tab === 'excluded' ? 'No excluded codes.' : 'No data.'}
+            showProgress={tab === 'review'}
+          />
+        </>
+      )}
+
+      {toast && <div className="toast">{toast}</div>}
+      {preview && <PreviewModal {...preview} onClose={() => setPreview(null)} showToast={showToast} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
