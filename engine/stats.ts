@@ -2,7 +2,7 @@ import type { Confidence, Item, StatsEffect } from './types';
 
 const TIGHT = 0.15;
 const SCATTERED = 0.35;
-const ORDER: Confidence[] = ['LOW', 'MEDIUM', 'HIGH'];
+const ORDER: ('LOW' | 'MEDIUM' | 'HIGH')[] = ['LOW', 'MEDIUM', 'HIGH'];
 
 export function coefficientOfVariation(values: number[]): number | null {
   const clean = values.filter((v) => Number.isFinite(v) && v > 0);
@@ -13,11 +13,11 @@ export function coefficientOfVariation(values: number[]): number | null {
   return Math.sqrt(variance) / mean;
 }
 
-function bump(c: Confidence): Confidence {
+function bump(c: 'LOW' | 'MEDIUM' | 'HIGH'): 'LOW' | 'MEDIUM' | 'HIGH' {
   const i = ORDER.indexOf(c);
   return i >= 0 && i < ORDER.length - 1 ? ORDER[i + 1]! : c;
 }
-function cap(c: Confidence): Confidence {
+function cap(c: 'LOW' | 'MEDIUM' | 'HIGH'): 'LOW' | 'MEDIUM' | 'HIGH' {
   const i = ORDER.indexOf(c);
   return i > 0 ? ORDER[i - 1]! : c;
 }
