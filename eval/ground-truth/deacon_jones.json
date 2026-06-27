@@ -1,0 +1,292 @@
+[
+  {
+    "dealerKey": "deacon",
+    "opCode": "DIAG",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "101001MPI",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "BAT",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "BASIC",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "RT",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "AC",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "DSF",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "MPI",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "CS",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "A4",
+    "expected": "Alignment"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "NOISE",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WATF",
+    "expected": "Transmission"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WBF",
+    "expected": "Brake Fluid"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WBS",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "SRS",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "BATT",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "DESCRIBED",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WMAN",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "CABF",
+    "expected": "Cabin Filter"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WIPER",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "NCSI",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "TUNE6",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "LEAK",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "SUSP",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "CEL",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "TBELT6",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "UCI",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "AF",
+    "expected": "Air Filter"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "FROTOR",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "PDI",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "ACCY",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "NITRO",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "RECALL",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "TRANS",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "IKEY",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WCS",
+    "expected": "Coolant"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "PATCH",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "HLRS",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "ELOF",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "RWIPER",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "CERT",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "MB2",
+    "expected": "2 Tires"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WIND",
+    "expected": "Fuel Service"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "FBS",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "RB",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "MB4",
+    "expected": "4 Tires"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "WRDS",
+    "expected": "Rear Differential"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "BRAKE",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "ENG",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "KEY",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "TIRE",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "EVAC",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "BULB",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "TUNE4",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "MB1",
+    "expected": "1 Tire"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "BELT",
+    "expected": null
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "MB3",
+    "expected": "3 Tires"
+  },
+  {
+    "dealerKey": "deacon",
+    "opCode": "SBEST",
+    "expected": null
+  }
+]
