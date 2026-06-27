@@ -5,6 +5,7 @@ const SCATTERED = 0.35;
 const ORDER: ('LOW' | 'MEDIUM' | 'HIGH')[] = ['LOW', 'MEDIUM', 'HIGH'];
 
 export function coefficientOfVariation(values: number[]): number | null {
+  // Zero/negative labor or hours (warranty, internal, free lines) are excluded so they don't skew CV.
   const clean = values.filter((v) => Number.isFinite(v) && v > 0);
   if (clean.length === 0) return null;
   const mean = clean.reduce((a, b) => a + b, 0) / clean.length;
@@ -22,6 +23,9 @@ function cap(c: 'LOW' | 'MEDIUM' | 'HIGH'): 'LOW' | 'MEDIUM' | 'HIGH' {
   return i > 0 ? ORDER[i - 1]! : c;
 }
 
+// NOTE (sub-project A): confidence — including a scattered-stats cap from HIGH to MEDIUM — is
+// RECORDED on the verdict but does not by itself route to a review queue here; auto-identification
+// keys on matchType only. Consuming confidence for review routing is deferred to the UI sub-project.
 export function applyStatsModifier(
   confidence: Confidence,
   item: Item,

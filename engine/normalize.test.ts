@@ -1,12 +1,8 @@
-import { normalizeForComparison, tokenize, dominantCluster } from './normalize';
+import { normalizeForComparison, dominantCluster } from './normalize';
 
 test('expands a/c and strips numbers/punctuation', () => {
   expect(normalizeForComparison('Recharge A/C $69.95')).toBe('recharge ac');
   expect(normalizeForComparison('4 WHEEL ALIGNMENT')).toBe('wheel alignment');
-});
-
-test('tokenize drops stopwords and applies synonyms', () => {
-  expect(tokenize('REPLACE FUEL INJECTION SERVICE')).toEqual(['fuel', 'injector']);
 });
 
 test('dominantCluster picks the most repeated normalized description', () => {

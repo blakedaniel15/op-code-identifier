@@ -31,3 +31,8 @@ test('batching: 60 unresolved items at batchSize 25 -> 3 bounded batches', async
   expect(sizes).toEqual([25, 25, 10]);
   expect(Math.max(...sizes)).toBeLessThanOrEqual(25);
 });
+test('adjudicator returning fewer verdicts than items falls back to UNMATCHED', async () => {
+  const adj: Adjudicator = { async adjudicate() { return []; } };
+  const out = await identify([mk('OP1', 'CONFIRM FRAME VIN')], { adjudicator: adj });
+  expect(out.get('d::OP1')!.matchType).toBe('UNMATCHED');
+});

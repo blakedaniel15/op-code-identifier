@@ -38,6 +38,8 @@ export async function identify(items: Item[], opts: IdentifyOptions): Promise<Ma
     const out = await opts.adjudicator.adjudicate(batch);
     batch.forEach((item, i) => {
       const v = out[i] ?? { menuItemId: null, matchType: 'UNMATCHED' as const, confidence: 'LOW' as const, reason: 'Adjudicator returned no verdict.' };
+      // Reclassify runs ONLY on post-adjudicator UNMATCHED items by design — items hard-resolved
+      // as UNMATCHED earlier (block/preAiFilter) are intentionally not re-surfaced for review.
       verdicts.set(itemKey(item), v.matchType === 'UNMATCHED' ? (reclassifyPass(item, catalog) ?? v) : v);
     });
   }
