@@ -1159,7 +1159,8 @@ git commit -m "feat: Adjudicator seam + no-network RecordedAdjudicator"
 ```ts
 import { identify } from './identify';
 import { RecordedAdjudicator } from './adjudicator';
-import type { Adjudicator, Item, Verdict } from './types';
+import type { Adjudicator } from './adjudicator';
+import type { Item, Verdict } from './types';
 import { itemKey } from './types';
 
 const mk = (op: string, desc: string, labor: number[] = [160, 160], hours: number[] = [1, 1]): Item => ({
@@ -1199,7 +1200,8 @@ Expected: FAIL ("Failed to resolve import './identify'").
 - [ ] **Step 3: Write `engine/identify.ts`**
 
 ```ts
-import type { Adjudicator, Item, MenuItem, Verdict } from './types';
+import type { Adjudicator } from './adjudicator';
+import type { Item, MenuItem, Verdict } from './types';
 import { itemKey } from './types';
 import { MENU_ITEMS } from './catalog';
 import { exactPass } from './passes/exact';
@@ -1411,11 +1413,10 @@ console.log(`Wrote ${fixture.length} labeled op codes to ${outPath}`);
 
 - [ ] **Step 2: Generate the fixture from the real CSV**
 
-Run:
+Run (the committed PII-free fixture `eval/fixtures/deacon_jones.csv` is the input — the raw CSV with VINs/customer data is gitignored under `data/` and never enters the repo):
 ```bash
-mkdir -p eval/ground-truth data
-cp deacon_jones_honda_raw_data_2026_06_01_to_2026_06_30.csv data/ 2>/dev/null || true
-npx tsx scripts/build-ground-truth.ts data/deacon_jones_honda_raw_data_2026_06_01_to_2026_06_30.csv deacon eval/ground-truth/deacon_jones.json
+mkdir -p eval/ground-truth
+PATH=/private/tmp/node-v20.11.1-darwin-arm64/bin:$PATH node node_modules/tsx/dist/cli.mjs scripts/build-ground-truth.ts eval/fixtures/deacon_jones.csv deacon eval/ground-truth/deacon_jones.json
 ```
 Expected: "Wrote 59 labeled op codes to eval/ground-truth/deacon_jones.json".
 Verify with `cat eval/ground-truth/deacon_jones.json` that labeled entries include `{ "opCode": "A4", "expected": "Alignment" }`, `"WBF" -> "Brake Fluid"`, `"MB4" -> "4 Tires"`, and most are `"expected": null`.
@@ -1463,7 +1464,7 @@ export async function runEval(opts: { csvPath: string; fixturePath: string }) {
 // CLI entry: tsx eval/harness.ts
 if (import.meta.url === `file://${process.argv[1]}`) {
   runEval({
-    csvPath: 'data/deacon_jones_honda_raw_data_2026_06_01_to_2026_06_30.csv',
+    csvPath: 'eval/fixtures/deacon_jones.csv',
     fixturePath: 'eval/ground-truth/deacon_jones.json',
   }).then((m) => {
     console.log('Identification:', (m.identification * 100).toFixed(1) + '%');
@@ -1487,7 +1488,7 @@ test('serviceNameToExpected maps no-service to null and passes real names throug
 
 test('tier-1 (Deacon Jones) meets the accuracy bar', async () => {
   const m = await runEval({
-    csvPath: 'data/deacon_jones_honda_raw_data_2026_06_01_to_2026_06_30.csv',
+    csvPath: 'eval/fixtures/deacon_jones.csv',
     fixturePath: 'eval/ground-truth/deacon_jones.json',
   });
   expect(m.identification).toBeGreaterThanOrEqual(0.9);
