@@ -2,3 +2,5 @@ node_modules/
 data/*.csv
 !data/.gitkeep
 .superpowers/
+.DS_Store
+**/.DS_Store
