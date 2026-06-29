@@ -1,2 +1,6 @@
 import { defineConfig } from 'vitest/config';
-export default defineConfig({ test: { globals: true, include: ['**/*.test.ts'] } });
+import path from 'path';
+export default defineConfig({
+  resolve: { alias: { '@': path.resolve(__dirname, '.') } },
+  test: { globals: true, include: ['**/*.test.ts'] },
+});
