@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root{
+  --background:248 250 252; --foreground:2 6 23; --card:255 255 255;
+  --primary:15 23 42; --primary-foreground:255 255 255;
+  --accent:3 105 161; --accent-foreground:255 255 255;
+  --muted:232 236 241; --muted-foreground:100 116 139;
+  --border:226 232 240; --ring:15 23 42;
+  --destructive:220 38 38; --destructive-foreground:255 255 255;
+  --exact:5 150 105; --fuzzy:217 119 6; --ai:124 58 237; --unmatched:100 116 139;
+}
+*{border-color:rgb(var(--border));}
+body{background:rgb(var(--background));color:rgb(var(--foreground));}
+.tnum{font-variant-numeric:tabular-nums;}
