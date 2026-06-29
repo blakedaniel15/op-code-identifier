@@ -14,5 +14,5 @@ test('learned op code resolves EXACT; unknown is classified by the engine', asyn
 test('result rows are PII-free (op fields + verdict + stats only)', async () => {
   const [row] = await identifyRun([mk('A4', '4 WHEEL ALIGNMENT')], new Map());
   expect(Object.keys(row!).sort()).toEqual(
-    ['confidence','hoursMean','laborMean','matchType','menuItemId','quantity','reason','repetition','rowCount','topDescription'].sort());
+    ['opCode','confidence','hoursMean','laborMean','matchType','menuItemId','quantity','reason','repetition','rowCount','topDescription'].sort());
 });
