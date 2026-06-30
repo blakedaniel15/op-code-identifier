@@ -268,12 +268,12 @@ export function menuItemSeedRows(): { id: string; name: string }[] {
 }
 
 export async function runMigration(sql: any): Promise<void> {
-  for (const stmt of migrationStatements()) await sql([stmt] as any);
+  for (const stmt of migrationStatements()) await sql.query(stmt);   // neon: raw DDL via .query()
   for (const r of menuItemSeedRows())
     await sql`insert into opcode_menu_items (id, name) values (${r.id}, ${r.name}) on conflict (id) do update set name = excluded.name`;
 }
 ```
-> Note: `sql([stmt] as any)` invokes the neon tagged-template with a literal DDL string (no interpolation). Mirror exactly how the sibling's `runMigration` issues raw DDL.
+> Note: neon's `sql` runs parameterless raw DDL via `sql.query(text)`; interpolated writes use the tagged template (`sql\`...${v}...\``).
 
 - [ ] **Step 4: Write `app/api/admin/setup/route.ts`** (mirror sibling: POST, `{secret}` vs `adminSecret()`, call `runMigration(db())`, return counts).
 
