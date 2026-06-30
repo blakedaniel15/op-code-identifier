@@ -16,7 +16,9 @@ export function menuItemSeedRows(): { id: string; name: string }[] {
   return MENU_ITEMS.map((m) => ({ id: m.id, name: m.name }));
 }
 export async function runMigration(sql: any): Promise<void> {
-  for (const stmt of migrationStatements()) await sql.query(stmt);   // neon: raw DDL via .query()
+  // neon's HTTP client (neon()) is tagged-template-only and has no .query(); calling it with a
+  // plain string runs that string as a parameterless query (verified: builds {query, params:[]}).
+  for (const stmt of migrationStatements()) await sql(stmt);
   for (const r of menuItemSeedRows())
     await sql`insert into opcode_menu_items (id, name) values (${r.id}, ${r.name}) on conflict (id) do update set name = excluded.name`;
 }
