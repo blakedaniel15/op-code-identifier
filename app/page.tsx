@@ -1,3 +1,9 @@
+import { PageShell } from "@/components/shell/page-shell";
+
 export default function Home() {
-  return <main>Op-Code Identifier — review app</main>;
+  return (
+    <PageShell>
+      <div>Runs</div>
+    </PageShell>
+  );
 }
