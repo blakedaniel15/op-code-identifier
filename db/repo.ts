@@ -38,8 +38,10 @@ export async function saveRunSnapshot(sql: Sql, s: {
 }
 
 export async function loadRunSummaries(sql: Sql) {
+  // ran_at cast to text: neon returns timestamptz as a Date, but the stats engine sorts
+  // ranAt with String.localeCompare — a Date there throws. Text keeps it a sortable string.
   return sql`select rs.run_id, rs.store_id, rs.store_name, rs.batch_id, rs.total, rs.matched, rs.review,
-    rs.unmatched, rs.status, rs.ran_at,
+    rs.unmatched, rs.status, rs.ran_at::text as ran_at,
     (select count(distinct d.op_code) from opcode_decisions d where d.run_id = rs.run_id) as decided
     from opcode_run_snapshots rs order by rs.ran_at desc limit 200`;
 }
@@ -77,5 +79,5 @@ export async function addBlock(sql: Sql, storeId: string, opCode: string) {
 // op_code mapped to the generic `sku` field the stats engine expects.
 export async function loadDecisions(sql: Sql) {
   return sql`select run_id as "runId", op_code as sku, op_description, match_type as "matchType",
-    confidence, outcome, store_id as dealer, ts from opcode_decisions order by ts asc`;
+    confidence, outcome, store_id as dealer, ts::text as ts from opcode_decisions order by ts asc`;
 }
