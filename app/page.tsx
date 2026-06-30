@@ -111,7 +111,7 @@ function RunList() {
                 {runs.map((r) => (
                   <tr
                     key={r.runId}
-                    className={cn('hover:bg-muted/30', 'cursor-pointer')}
+                    className={cn('relative hover:bg-muted/30', 'cursor-pointer')}
                   >
                     <td className="px-4 py-2.5 font-medium">
                       <Link
