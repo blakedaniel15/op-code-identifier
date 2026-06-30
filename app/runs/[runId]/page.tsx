@@ -29,7 +29,11 @@ function RunReview({ runId }: { runId: string }) {
   const snapshotted = useRef(false);
 
   useEffect(() => {
-    fetch('/api/runs/' + encodeURIComponent(runId))
+    // The route param may arrive percent-encoded (the run id contains '|' → '%7C').
+    // Normalize to the raw id, then encode exactly once so we don't double-encode.
+    let rawRunId = runId;
+    try { rawRunId = decodeURIComponent(runId); } catch { /* already decoded */ }
+    fetch('/api/runs/' + encodeURIComponent(rawRunId))
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed to load run.');
