@@ -53,10 +53,9 @@ export interface MenuOption {
 
 // ── Pure helpers (exported for tests + page) ─────────────────────────────────
 
-export function pickYesNo(d: Record<string, string>): Record<string, string> {
+export function seedDecisions(d: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(d ?? {}))
-    if (v === 'approve' || v === 'reject') out[k] = v;
+  for (const [k, v] of Object.entries(d ?? {})) if (v === 'approve' || v === 'reject' || v === 'correct') out[k] = v;
   return out;
 }
 
@@ -180,7 +179,7 @@ export function ResultsTable({
 
   // Decision state lifted to table so highlights survive re-renders.
   const [decided, setDecided] = useState<Record<string, string>>(() =>
-    pickYesNo(initialDecisions),
+    seedDecisions(initialDecisions),
   );
   const [savingOpCode, setSavingOpCode] = useState<string | null>(null);
   const [errorOpCode, setErrorOpCode] = useState<string | null>(null);

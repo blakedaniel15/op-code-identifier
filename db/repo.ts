@@ -21,7 +21,7 @@ export async function loadStoreName(sql: Sql, storeId: string): Promise<string> 
 // Returns a Map keyed by engine itemKey "${storeId}::${op_code}" -> menu_item_id.
 export async function loadLearnedMappings(sql: Sql, storeId: string): Promise<Map<string, string>> {
   const rows = await sql`select op_code, menu_item_id from opcode_learned_mappings where store_id = ${storeId}`;
-  return new Map(rows.map((r: any) => [`${storeId}::${r.op_code}`, r.menu_item_id]));
+  return new Map(rows.map((r: any) => [`${storeId}::${String(r.op_code).toUpperCase()}`, r.menu_item_id]));
 }
 
 export async function saveRunSnapshot(sql: Sql, s: {

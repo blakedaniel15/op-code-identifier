@@ -5,6 +5,8 @@ export interface ServiceLineRow {
   labor_sale?: string | number | null; tech_hours?: string | number | null;
 }
 export function runId(storeId: string, batchId: string): string { return `${storeId}|${batchId}`; }
+// runId is "${storeId}|${batchId}"; parseRunId splits on the FIRST '|', so this assumes
+// store_id never contains '|' (batch_id may). Service-line store ids are slugs without pipes.
 export function parseRunId(id: string): { storeId: string; batchId: string } {
   const i = id.indexOf('|');
   return { storeId: i >= 0 ? id.slice(0, i) : id, batchId: i >= 0 ? id.slice(i + 1) : '' };
