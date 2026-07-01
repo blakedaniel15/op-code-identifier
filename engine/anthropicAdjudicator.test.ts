@@ -7,7 +7,7 @@ const items: Item[] = [
 ];
 const menuItemIds = new Set(['alignment', 'coolant']);
 const mk = (fetchImpl: FetchLike) => new AnthropicAdjudicator({
-  fetchImpl, apiKey: 'k', model: 'claude-sonnet-4-6', systemPrompt: 'SYS',
+  fetchImpl, apiKey: 'k', model: 'claude-sonnet-5', systemPrompt: 'SYS',
   menuItemIds, buildUserBatch: () => 'BATCH', delayMs: 0,
 });
 function respond(verdicts: unknown[]): FetchLike {
@@ -43,5 +43,5 @@ test('request body carries cached system block + forced tool_choice', async () =
   await mk(fetchImpl).adjudicate([items[0]!]);
   expect(body.system[0].cache_control).toEqual({ type: 'ephemeral' });
   expect(body.tool_choice).toEqual({ type: 'tool', name: 'classify' });
-  expect(body.model).toBe('claude-sonnet-4-6');
+  expect(body.model).toBe('claude-sonnet-5');
 });

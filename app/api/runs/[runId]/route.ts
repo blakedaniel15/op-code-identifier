@@ -11,7 +11,7 @@ import type { Verdict } from '@/engine/types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-5';
 // Model is part of the verdict-cache version so switching ANTHROPIC_MODEL invalidates
 // old-model verdicts instead of serving them stale forever.
 const CATALOG_VERSION = `${MODEL}|v${MENU_ITEMS.length}`;
