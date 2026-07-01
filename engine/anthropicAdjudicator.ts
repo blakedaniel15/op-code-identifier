@@ -85,7 +85,7 @@ export class AnthropicAdjudicator implements Adjudicator {
         return block.input.verdicts;
       } catch (e) {
         lastErr = e;
-        await new Promise((r) => setTimeout(r, (this.deps.delayMs ?? 200) * (attempt + 1)));
+        if (attempt < retries - 1) await new Promise((r) => setTimeout(r, (this.deps.delayMs ?? 200) * (attempt + 1)));
       }
     }
     throw lastErr;
