@@ -10,6 +10,8 @@ export function migrationStatements(): string[] {
     `create table if not exists opcode_ai_verdict_cache (hash text primary key, verdict jsonb, created_at timestamptz not null default now())`,
     `create table if not exists opcode_blocked (store_id text not null, op_code text not null, created_at timestamptz not null default now(), primary key (store_id, op_code))`,
     `create table if not exists opcode_known (store_id text not null, op_code text not null, primary key (store_id, op_code))`,
+    `create table if not exists opcode_uploaded_lines (id bigserial primary key, store_id text not null, store_name text, batch_id text not null, op_code text not null, op_description text default '', labor_sale text, tech_hours text, uploaded_at timestamptz not null default now())`,
+    `create index if not exists opcode_uploaded_lines_run_idx on opcode_uploaded_lines (store_id, batch_id)`,
     `alter table opcode_ai_verdict_cache add column if not exists model text`,
     `alter table opcode_ai_verdict_cache add column if not exists catalog_version text`,
   ];

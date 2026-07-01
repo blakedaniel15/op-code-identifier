@@ -12,10 +12,41 @@ export async function loadRunOpLines(sql: Sql, storeId: string, batchId: string)
     from service_lines where store_id = ${storeId} and batch_id = ${batchId}`;
 }
 
+export async function loadUploadedOpLines(sql: Sql, storeId: string, batchId: string) {
+  return sql`select store_id, op_code, op_description, labor_sale, tech_hours
+    from opcode_uploaded_lines where store_id = ${storeId} and batch_id = ${batchId}`;
+}
+
+export async function insertUploadedLines(sql: Sql, a: {
+  storeId: string; storeName: string; batchId: string;
+  rows: { opCode: string; opDescription: string; laborSale: string; techHours: string }[];
+}): Promise<number> {
+  if (a.rows.length === 0) return 0;
+  const opCodes = a.rows.map((r) => r.opCode);
+  const descs = a.rows.map((r) => r.opDescription);
+  const labors = a.rows.map((r) => r.laborSale);
+  const hours = a.rows.map((r) => r.techHours);
+  // Bulk insert: three constants + the four unnest columns → the seven table columns, in order.
+  await sql`insert into opcode_uploaded_lines
+    (store_id, store_name, batch_id, op_code, op_description, labor_sale, tech_hours)
+    select ${a.storeId}, ${a.storeName}, ${a.batchId}, *
+    from unnest(${opCodes}::text[], ${descs}::text[], ${labors}::text[], ${hours}::text[])`;
+  return a.rows.length;
+}
+
+export async function listUploadedRuns(sql: Sql) {
+  return sql`select store_id, max(store_name) as store_name, batch_id, count(*)::int as total,
+    count(distinct op_code)::int as op_codes, max(uploaded_at)::text as ingested_at
+    from opcode_uploaded_lines group by store_id, batch_id order by max(uploaded_at) desc limit 200`;
+}
+
 export async function loadStoreName(sql: Sql, storeId: string): Promise<string> {
   const rows = await sql`select store_name from service_lines
     where store_id = ${storeId} and store_name is not null limit 1`;
-  return rows[0]?.store_name ?? storeId;
+  if (rows[0]?.store_name) return rows[0].store_name;
+  const up = await sql`select store_name from opcode_uploaded_lines
+    where store_id = ${storeId} and store_name is not null limit 1`;
+  return up[0]?.store_name ?? storeId;
 }
 
 // Returns a Map keyed by engine itemKey "${storeId}::${op_code}" -> menu_item_id.
