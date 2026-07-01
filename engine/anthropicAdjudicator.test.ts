@@ -44,4 +44,5 @@ test('request body carries cached system block + forced tool_choice', async () =
   expect(body.system[0].cache_control).toEqual({ type: 'ephemeral' });
   expect(body.tool_choice).toEqual({ type: 'tool', name: 'classify' });
   expect(body.model).toBe('claude-sonnet-5');
+  expect(body.output_config).toEqual({ effort: 'medium' });
 });

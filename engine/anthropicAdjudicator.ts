@@ -13,6 +13,7 @@ export interface AnthropicAdjudicatorDeps {
   maxTokens?: number;
   maxRetries?: number;
   delayMs?: number;
+  effort?: 'low' | 'medium' | 'high' | 'max';
 }
 
 const CLASSIFY_TOOL = {
@@ -64,6 +65,7 @@ export class AnthropicAdjudicator implements Adjudicator {
     const body = {
       model: this.deps.model,
       max_tokens: this.deps.maxTokens ?? 4000,
+      output_config: { effort: this.deps.effort ?? 'medium' },
       system: [{ type: 'text', text: this.deps.systemPrompt, cache_control: { type: 'ephemeral' } }],
       tools: [CLASSIFY_TOOL],
       tool_choice: { type: 'tool', name: 'classify' },
