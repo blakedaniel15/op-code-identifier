@@ -6,6 +6,7 @@ import { cn } from "@/lib/ui";
 
 const NAV = [
   { href: "/", label: "Runs" },
+  { href: "/upload", label: "Upload" },
   { href: "/stats", label: "Stats" },
 ];
 
