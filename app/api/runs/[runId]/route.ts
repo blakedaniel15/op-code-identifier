@@ -1,9 +1,40 @@
 import { db } from '@/db/client';
-import { loadRunOpLines, loadLearnedMappings, loadStoreName, loadRunDecisions } from '@/db/repo';
+import { loadRunOpLines, loadLearnedMappings, loadStoreName, loadRunDecisions, getAiVerdicts, putAiVerdict, buildExamples } from '@/db/repo';
 import { parseRunId, serviceLinesToItems } from '@/lib/run';
 import { identifyRun } from '@/lib/identify-run';
+import { MENU_ITEMS } from '@/engine/catalog';
+import { buildSystemPrompt, buildUserBatch } from '@/engine/prompt';
+import { AnthropicAdjudicator } from '@/engine/anthropicAdjudicator';
+import { CachingAdjudicator } from '@/engine/cachingAdjudicator';
+import { RecordedAdjudicator, type Adjudicator } from '@/engine/adjudicator';
+import type { Verdict } from '@/engine/types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const CATALOG_VERSION = 'v' + MENU_ITEMS.length;
+const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+
+async function buildAdjudicator(sql: any, storeId: string): Promise<Adjudicator> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return new RecordedAdjudicator(new Map());
+  const examples = await buildExamples(sql, storeId);
+  const inner = new AnthropicAdjudicator({
+    fetchImpl: (u, i) => fetch(u, i),
+    apiKey,
+    model: MODEL,
+    systemPrompt: buildSystemPrompt(MENU_ITEMS, examples),
+    menuItemIds: new Set(MENU_ITEMS.map((m) => m.id)),
+    buildUserBatch,
+  });
+  return new CachingAdjudicator({
+    inner,
+    catalogVersion: CATALOG_VERSION,
+    getCached: (hashes) => getAiVerdicts(sql, hashes) as Promise<Map<string, Verdict>>,
+    setCached: async (entries) => {
+      for (const e of entries) await putAiVerdict(sql, { hash: e.hash, verdict: e.verdict, model: MODEL, catalogVersion: CATALOG_VERSION });
+    },
+  });
+}
 
 export async function GET(_req: Request, { params }: { params: { runId: string } }) {
   const sql = db();
@@ -15,6 +46,7 @@ export async function GET(_req: Request, { params }: { params: { runId: string }
     loadStoreName(sql, storeId),
     loadRunDecisions(sql, id),
   ]);
-  const results = await identifyRun(serviceLinesToItems(rows), learned);
+  const adjudicator = await buildAdjudicator(sql, storeId);
+  const results = await identifyRun(serviceLinesToItems(rows), learned, adjudicator);
   return Response.json({ runId: id, storeId, storeName, batchId, results, decisions });
 }

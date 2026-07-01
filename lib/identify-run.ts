@@ -1,5 +1,5 @@
 import { identify } from '@/engine/identify';
-import { RecordedAdjudicator } from '@/engine/adjudicator';
+import { RecordedAdjudicator, type Adjudicator } from '@/engine/adjudicator';
 import { MENU_ITEMS } from '@/engine/catalog';
 import { dominantCluster } from '@/engine/normalize';
 import { itemKey, type Item } from '@/engine/types';
@@ -11,8 +11,13 @@ export interface ResultRow {
 }
 const mean = (v: number[]) => { const c = v.filter((x) => Number.isFinite(x) && x > 0); return c.length ? c.reduce((a, b) => a + b, 0) / c.length : null; };
 
-export async function identifyRun(items: Item[], learned: Map<string, string>): Promise<ResultRow[]> {
-  const verdicts = await identify(items, { learned, adjudicator: new RecordedAdjudicator(new Map()), catalog: MENU_ITEMS });
+export async function identifyRun(
+  items: Item[],
+  learned: Map<string, string>,
+  adjudicator: Adjudicator = new RecordedAdjudicator(new Map()),
+  batchSize = 30,
+): Promise<ResultRow[]> {
+  const verdicts = await identify(items, { learned, adjudicator, catalog: MENU_ITEMS, batchSize });
   return items.map((it) => {
     const v = verdicts.get(itemKey(it))!;
     return {
