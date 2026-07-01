@@ -3,7 +3,7 @@ type Sql = any;
 
 export async function listServiceLineRuns(sql: Sql) {
   return sql`select store_id, max(store_name) as store_name, batch_id, count(*)::int as total,
-    count(distinct op_code)::int as op_codes, max(ingested_at) as ingested_at
+    count(distinct op_code)::int as op_codes, max(ingested_at)::text as ingested_at
     from service_lines group by store_id, batch_id order by max(ingested_at) desc limit 200`;
 }
 

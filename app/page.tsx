@@ -19,6 +19,7 @@ interface RunListItem {
   decided: number;
   review: number | null;
   matched: number | null;
+  source: 'db' | 'upload';
 }
 
 // ── Spinner ──────────────────────────────────────────────────────────────────
@@ -60,9 +61,9 @@ function RunList() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Service-line batches</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Runs</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Batches imported from the DMS. Click a row to open it and review op-code matches.
+          Service-line batches from the DMS and uploaded CSVs. Click a row to review op-code matches.
         </p>
       </div>
 
@@ -120,6 +121,11 @@ function RunList() {
                       >
                         {r.storeName || r.storeId}
                       </Link>
+                      {r.source === 'upload' && (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-ai/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ai ring-1 ring-inset ring-ai/20">
+                          Uploaded
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
                       {r.batchId}

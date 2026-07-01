@@ -1,5 +1,5 @@
 import { db } from '@/db/client';
-import { loadRunOpLines, loadLearnedMappings, loadStoreName, loadRunDecisions, getAiVerdicts, putAiVerdict, buildExamples } from '@/db/repo';
+import { loadRunOpLines, loadUploadedOpLines, loadLearnedMappings, loadStoreName, loadRunDecisions, getAiVerdicts, putAiVerdict, buildExamples } from '@/db/repo';
 import { parseRunId, serviceLinesToItems } from '@/lib/run';
 import { identifyRun } from '@/lib/identify-run';
 import { MENU_ITEMS } from '@/engine/catalog';
@@ -42,12 +42,14 @@ export async function GET(_req: Request, { params }: { params: { runId: string }
   const sql = db();
   const id = params.runId;
   const { storeId, batchId } = parseRunId(id);
-  const [rows, learned, storeName, decisions] = await Promise.all([
+  const [dbRows, learned, storeName, decisions] = await Promise.all([
     loadRunOpLines(sql, storeId, batchId),
     loadLearnedMappings(sql, storeId),
     loadStoreName(sql, storeId),
     loadRunDecisions(sql, id),
   ]);
+  // Service-line batches win; an uploaded run has no service_lines rows, so fall back to its table.
+  const rows = dbRows.length > 0 ? dbRows : await loadUploadedOpLines(sql, storeId, batchId);
   const adjudicator = await buildAdjudicator(sql, storeId);
   const results = await identifyRun(serviceLinesToItems(rows), learned, adjudicator);
   return Response.json({ runId: id, storeId, storeName, batchId, results, decisions });
