@@ -81,3 +81,23 @@ export async function loadDecisions(sql: Sql) {
   return sql`select run_id as "runId", op_code as sku, op_description, match_type as "matchType",
     confidence, outcome, store_id as dealer, ts::text as ts from opcode_decisions order by ts asc`;
 }
+
+export async function getAiVerdicts(sql: Sql, hashes: string[]): Promise<Map<string, any>> {
+  if (hashes.length === 0) return new Map();
+  const rows = await sql`select hash, verdict from opcode_ai_verdict_cache where hash = any(${hashes})`;
+  return new Map(rows.map((r: any) => [r.hash, r.verdict]));
+}
+
+export async function putAiVerdict(sql: Sql, e: { hash: string; verdict: unknown; model: string; catalogVersion: string }) {
+  await sql`insert into opcode_ai_verdict_cache (hash, verdict, model, catalog_version)
+    values (${e.hash}, ${JSON.stringify(e.verdict)}, ${e.model}, ${e.catalogVersion})
+    on conflict (hash) do nothing`;
+}
+
+export async function buildExamples(sql: Sql, storeId: string): Promise<{ description: string; menuItemId: string }[]> {
+  const rows = await sql`select op_description as description, menu_item_id as "menuItemId"
+    from opcode_learned_mappings
+    where store_id = ${storeId} and op_description <> ''
+    order by created_at desc limit 14`;
+  return rows.map((r: any) => ({ description: r.description, menuItemId: r.menuItemId }));
+}

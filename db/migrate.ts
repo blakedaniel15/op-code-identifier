@@ -10,6 +10,8 @@ export function migrationStatements(): string[] {
     `create table if not exists opcode_ai_verdict_cache (hash text primary key, verdict jsonb, created_at timestamptz not null default now())`,
     `create table if not exists opcode_blocked (store_id text not null, op_code text not null, created_at timestamptz not null default now(), primary key (store_id, op_code))`,
     `create table if not exists opcode_known (store_id text not null, op_code text not null, primary key (store_id, op_code))`,
+    `alter table opcode_ai_verdict_cache add column if not exists model text`,
+    `alter table opcode_ai_verdict_cache add column if not exists catalog_version text`,
   ];
 }
 export function menuItemSeedRows(): { id: string; name: string }[] {
